@@ -83,7 +83,7 @@ export class FirebaseAuthService {
         email: userData.email,
         preferences: {
           currency: "USD",
-          budgetCycle: "monthly" as const,
+          budgetCycle: "monthly",
           notifications: {
             billReminders: true,
             budgetAlerts: true,
@@ -103,14 +103,11 @@ export class FirebaseAuthService {
 
       const user = await this.convertFirebaseUser(userCredential.user);
       const token = await userCredential.user.getIdToken();
+      const refreshToken = userCredential.user.refreshToken;
 
       return {
         success: true,
-        data: {
-          user,
-          token,
-          refreshToken: userCredential.user.refreshToken || "",
-        },
+        data: { user, token, refreshToken },
       };
     } catch (error: any) {
       return {
@@ -136,14 +133,11 @@ export class FirebaseAuthService {
 
       const user = await this.convertFirebaseUser(userCredential.user);
       const token = await userCredential.user.getIdToken();
+      const refreshToken = userCredential.user.refreshToken;
 
       return {
         success: true,
-        data: {
-          user,
-          token,
-          refreshToken: userCredential.user.refreshToken || "",
-        },
+        data: { user, token, refreshToken },
       };
     } catch (error: any) {
       return {
@@ -154,13 +148,10 @@ export class FirebaseAuthService {
   }
 
   // Logout
-  async logout(): Promise<ApiResponse<boolean>> {
+  async logout(): Promise<ApiResponse<void>> {
     try {
       await signOut(auth);
-      return {
-        success: true,
-        data: true,
-      };
+      return { success: true };
     } catch (error: any) {
       return {
         success: false,
@@ -170,7 +161,7 @@ export class FirebaseAuthService {
   }
 
   // Forgot password
-  async forgotPassword(email: string): Promise<ApiResponse<string>> {
+  async forgotPassword(email: string): Promise<ApiResponse<void>> {
     try {
       await sendPasswordResetEmail(auth, email);
       return {
@@ -189,12 +180,12 @@ export class FirebaseAuthService {
   async resetPassword(data: {
     oobCode: string;
     password: string;
-  }): Promise<ApiResponse<string>> {
+  }): Promise<ApiResponse<void>> {
     try {
       await confirmPasswordReset(auth, data.oobCode, data.password);
       return {
         success: true,
-        message: "Password reset successfully",
+        message: "Password reset successful",
       };
     } catch (error: any) {
       return {
@@ -204,20 +195,56 @@ export class FirebaseAuthService {
     }
   }
 
-  // Refresh token (Firebase handles this automatically)
+  // Change password
+  async changePassword(
+    currentPassword: string,
+    newPassword: string
+  ): Promise<ApiResponse<void>> {
+    try {
+      if (!auth.currentUser) {
+        throw new Error("No authenticated user");
+      }
+
+      // Re-authenticate user before changing password
+      const credential = EmailAuthProvider.credential(
+        auth.currentUser.email!,
+        currentPassword
+      );
+      await reauthenticateWithCredential(auth.currentUser, credential);
+
+      // Update password
+      await updatePassword(auth.currentUser, newPassword);
+
+      return {
+        success: true,
+        message: "Password updated successfully",
+      };
+    } catch (error: any) {
+      return {
+        success: false,
+        error: this.handleFirebaseError(error),
+      };
+    }
+  }
+
+  // Refresh token
   async refreshToken(
     refreshToken: string
-  ): Promise<ApiResponse<{ token: string; user: User }>> {
+  ): Promise<ApiResponse<{ user: User; token: string; refreshToken: string }>> {
     try {
-      if (auth.currentUser) {
-        const token = await auth.currentUser.getIdToken(true); // Force refresh
-        const user = await this.convertFirebaseUser(auth.currentUser);
-        return {
-          success: true,
-          data: { token, user },
-        };
+      if (!auth.currentUser) {
+        throw new Error("No authenticated user");
       }
-      throw new Error("No current user");
+
+      // Force refresh the token
+      const token = await auth.currentUser.getIdToken(true);
+      const user = await this.convertFirebaseUser(auth.currentUser);
+      const newRefreshToken = auth.currentUser.refreshToken;
+
+      return {
+        success: true,
+        data: { user, token, refreshToken: newRefreshToken },
+      };
     } catch (error: any) {
       return {
         success: false,
@@ -226,17 +253,24 @@ export class FirebaseAuthService {
     }
   }
 
-  // Validate token (check if user is authenticated)
-  async validateToken(token: string): Promise<ApiResponse<{ user: User }>> {
+  // Validate token
+  async validateToken(
+    token: string
+  ): Promise<ApiResponse<{ user: User; token: string; refreshToken: string }>> {
     try {
-      if (auth.currentUser) {
-        const user = await this.convertFirebaseUser(auth.currentUser);
-        return {
-          success: true,
-          data: { user },
-        };
+      if (!auth.currentUser) {
+        throw new Error("No authenticated user");
       }
-      throw new Error("No authenticated user");
+
+      // Try to get a fresh token to validate current session
+      const freshToken = await auth.currentUser.getIdToken();
+      const user = await this.convertFirebaseUser(auth.currentUser);
+      const refreshToken = auth.currentUser.refreshToken;
+
+      return {
+        success: true,
+        data: { user, token: freshToken, refreshToken },
+      };
     } catch (error: any) {
       return {
         success: false,
@@ -301,6 +335,10 @@ export class FirebaseAuthService {
         return "Too many failed attempts. Please try again later";
       case "auth/network-request-failed":
         return "Network error. Please check your connection";
+      case "auth/popup-closed-by-user":
+        return "Sign-in cancelled";
+      case "auth/cancelled-popup-request":
+        return "Sign-in cancelled";
       default:
         return error.message || "An unknown error occurred";
     }

@@ -1,7 +1,8 @@
 import React, { useState } from "react";
-import { View, StyleSheet } from "react-native";
-import { Text, TextInput, Button, useTheme } from "react-native-paper";
+import { View, StyleSheet, Alert } from "react-native";
+import { Text, TextInput, Button, useTheme, Divider } from "react-native-paper";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { MaterialIcons } from "@expo/vector-icons";
 
 import { useAppDispatch, useAppSelector } from "../store";
 import { loginUser } from "../store/slices/authSlice";
@@ -18,6 +19,12 @@ export function LoginScreen({ navigation }: any) {
     if (email && password) {
       dispatch(loginUser({ email, password }));
     }
+  };
+
+  const handleGoogleSignIn = () => {
+    Alert.alert("Google Sign-In", "Google Sign-In will be implemented here", [
+      { text: "OK" },
+    ]);
   };
 
   return (
@@ -76,6 +83,33 @@ export function LoginScreen({ navigation }: any) {
             Login
           </Button>
 
+          <View style={styles.dividerContainer}>
+            <Divider style={styles.divider} />
+            <Text
+              variant="bodySmall"
+              style={[
+                styles.dividerText,
+                { color: theme.colors.onSurfaceVariant },
+              ]}
+            >
+              OR
+            </Text>
+            <Divider style={styles.divider} />
+          </View>
+
+          <Button
+            mode="outlined"
+            onPress={handleGoogleSignIn}
+            loading={loading}
+            disabled={loading}
+            style={[styles.button, styles.googleButton]}
+            icon={({ size, color }) => (
+              <MaterialIcons name="login" size={size} color={color} />
+            )}
+          >
+            Continue with Google
+          </Button>
+
           <Button
             mode="text"
             onPress={() => navigation.navigate("Register")}
@@ -115,6 +149,20 @@ const styles = StyleSheet.create({
   },
   button: {
     marginTop: 8,
+  },
+  googleButton: {
+    marginTop: 0,
+  },
+  dividerContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginVertical: 16,
+  },
+  divider: {
+    flex: 1,
+  },
+  dividerText: {
+    marginHorizontal: 16,
   },
   error: {
     textAlign: "center",
