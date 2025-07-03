@@ -1,20 +1,125 @@
-import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View } from 'react-native';
+import React, { useEffect } from "react";
+import { StatusBar } from "expo-status-bar";
+import { Provider } from "react-redux";
+import { NavigationContainer } from "@react-navigation/native";
+import { PaperProvider } from "react-native-paper";
+import { GestureHandlerRootView } from "react-native-gesture-handler";
+import { SafeAreaProvider } from "react-native-safe-area-context";
 
-export default function App() {
+import { store } from "./src/store";
+import { RootNavigator } from "./src/navigation/RootNavigator";
+import { AuthNavigator } from "./src/navigation/AuthNavigator";
+import { useAppSelector, useAppDispatch } from "./src/store";
+import {
+  setAuthState,
+  setLoading,
+  clearError,
+} from "./src/store/slices/authSlice";
+import { LoadingScreen } from "./src/screens/LoadingScreen";
+import { THEME_COLORS } from "./src/constants";
+import { paperTheme } from "./src/utils/theme";
+import { firebaseAuthService } from "./src/services/firebaseAuthService";
+
+function AppContent() {
+  const dispatch = useAppDispatch();
+  const { isAuthenticated, loading } = useAppSelector((state) => state.auth);
+  const { theme } = useAppSelector((state) => state.ui);
+
+  useEffect(() => {
+    // Listen to Firebase auth state changes
+    const unsubscribe = firebaseAuthService.onAuthStateChanged(
+      async (firebaseUser) => {
+        try {
+          if (firebaseUser) {
+            // User is signed in, convert to our User type
+            const response = await firebaseAuthService.validateToken(
+              await firebaseUser.getIdToken()
+            );
+            if (response.success && response.data) {
+              dispatch(
+                setAuthState({
+                  isAuthenticated: true,
+                  user: response.data.user,
+                  token: await firebaseUser.getIdToken(),
+                  refreshToken: firebaseUser.refreshToken || "",
+                })
+              );
+            }
+          } else {
+            // User is signed out
+            dispatch(
+              setAuthState({
+                isAuthenticated: false,
+                user: null,
+                token: null,
+                refreshToken: null,
+              })
+            );
+          }
+        } catch (error) {
+          console.error("Auth state change error:", error);
+          dispatch(clearError());
+        } finally {
+          dispatch(setLoading(false));
+        }
+      }
+    );
+
+    return () => unsubscribe(); // Cleanup subscription on unmount
+  }, [dispatch]);
+
+  if (loading) {
+    return <LoadingScreen />;
+  }
+
   return (
-    <View style={styles.container}>
-      <Text>Open up App.tsx to start working on your app!</Text>
-      <StatusBar style="auto" />
-    </View>
+    <NavigationContainer
+      theme={{
+        dark: theme === "dark",
+        colors: {
+          primary: THEME_COLORS[theme].primary,
+          background: THEME_COLORS[theme].background,
+          card: THEME_COLORS[theme].surface,
+          text: THEME_COLORS[theme].text,
+          border: THEME_COLORS[theme].border,
+          notification: THEME_COLORS[theme].accent,
+        },
+        fonts: {
+          regular: {
+            fontFamily: "System",
+            fontWeight: "normal",
+          },
+          medium: {
+            fontFamily: "System",
+            fontWeight: "500",
+          },
+          bold: {
+            fontFamily: "System",
+            fontWeight: "bold",
+          },
+          heavy: {
+            fontFamily: "System",
+            fontWeight: "800",
+          },
+        },
+      }}
+    >
+      {isAuthenticated ? <RootNavigator /> : <AuthNavigator />}
+    </NavigationContainer>
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-});
+export default function App() {
+  return (
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <SafeAreaProvider>
+        <Provider store={store}>
+          <PaperProvider theme={paperTheme}>
+            <StatusBar style="auto" />
+            <AppContent />
+          </PaperProvider>
+        </Provider>
+      </SafeAreaProvider>
+    </GestureHandlerRootView>
+  );
+}
