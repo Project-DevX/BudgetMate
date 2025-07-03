@@ -164,6 +164,7 @@ export function TransactionDetailScreen() {
     >
       <ScrollView
         style={styles.scrollView}
+        contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
         {/* Header Card */}
@@ -566,6 +567,9 @@ const styles = StyleSheet.create({
   scrollView: {
     flex: 1,
     padding: 16,
+  },
+  scrollContent: {
+    paddingBottom: 16,
   },
   headerCard: {
     marginBottom: 16,

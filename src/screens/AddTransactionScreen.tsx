@@ -19,6 +19,7 @@ import {
   createTransaction,
   addTransaction,
 } from "../store/slices/transactionSlice";
+import { Transaction } from "../types";
 
 // Predefined categories for expenses and income
 const EXPENSE_CATEGORIES = [
@@ -119,31 +120,30 @@ export function AddTransactionScreen({ navigation }: any) {
         amount: parseFloat(formData.amount),
         description: formData.description.trim(),
         category: formData.category,
-        subcategory: undefined,
-        merchant: formData.merchant.trim() || undefined,
+        // Only include merchant if it has a value
+        ...(formData.merchant.trim() && { merchant: formData.merchant.trim() }),
         date: formData.date,
         type: formData.type,
         tags: formData.tags,
         isRecurring: formData.isRecurring,
-        recurringId: undefined,
         confidence: 1.0, // Manual entry has high confidence
         source: "manual" as const,
       };
 
-      // For now, let's use the regular action until the API is ready
-      const newTransaction = {
-        id: Date.now().toString(), // Simple ID generation
-        userId: user.id,
-        ...transactionData,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-      };
+      // Filter out any undefined values to prevent Firestore errors
+      const cleanTransactionData = Object.fromEntries(
+        Object.entries(transactionData).filter(
+          ([_, value]) => value !== undefined
+        )
+      ) as Omit<Transaction, "id" | "userId" | "createdAt" | "updatedAt">;
 
-      dispatch(addTransaction(newTransaction));
-      console.log("AddTransaction: Transaction dispatched successfully");
-
-      // Uncomment this when the API is ready:
-      // await dispatch(createTransaction(transactionData)).unwrap();
+      // 🔥 Now using Firebase createTransaction instead of local addTransaction
+      console.log("AddTransaction: Sending to Firebase...");
+      console.log("AddTransaction: Clean data:", cleanTransactionData);
+      await dispatch(createTransaction(cleanTransactionData)).unwrap();
+      console.log(
+        "AddTransaction: Transaction created successfully in Firebase"
+      );
 
       Alert.alert("Success", "Transaction added successfully!", [
         {
@@ -168,11 +168,14 @@ export function AddTransactionScreen({ navigation }: any) {
         },
       ]);
     } catch (error: any) {
-      Alert.alert(
-        "Error",
-        error || "Failed to add transaction. Please try again.",
-        [{ text: "OK" }]
-      );
+      console.error("AddTransaction: Error creating transaction:", error);
+      const errorMessage =
+        error?.message ||
+        error ||
+        "Failed to add transaction. Please try again.";
+      Alert.alert("Error", `Failed to save transaction: ${errorMessage}`, [
+        { text: "OK" },
+      ]);
     }
   };
 
@@ -212,7 +215,11 @@ export function AddTransactionScreen({ navigation }: any) {
     <SafeAreaView
       style={[styles.container, { backgroundColor: theme.colors.background }]}
     >
-      <ScrollView contentContainerStyle={styles.scrollContent}>
+      <ScrollView
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}
+        keyboardShouldPersistTaps="handled"
+      >
         <View style={styles.content}>
           <Text
             variant="headlineMedium"
@@ -429,6 +436,7 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     flexGrow: 1,
+    paddingBottom: 50, // Extra padding for better scrolling
   },
   content: {
     flex: 1,

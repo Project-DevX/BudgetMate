@@ -8,6 +8,7 @@ import { MaterialIcons } from "@expo/vector-icons";
 import { useAppSelector, useAppDispatch } from "../store";
 import { toggleTheme } from "../store/slices/uiSlice";
 import { logoutUser } from "../store/slices/authSlice";
+import { fetchAllTransactions } from "../store/slices/transactionSlice";
 
 export function DashboardScreen() {
   const theme = useTheme();
@@ -25,6 +26,21 @@ export function DashboardScreen() {
   const handleToggleTheme = () => {
     dispatch(toggleTheme());
   };
+
+  // Fetch transactions when component mounts
+  useEffect(() => {
+    const loadTransactions = async () => {
+      try {
+        console.log("🔥 Dashboard: Fetching transactions from Firebase...");
+        await dispatch(fetchAllTransactions()).unwrap();
+        console.log("✅ Dashboard: Transactions loaded successfully");
+      } catch (error) {
+        console.error("❌ Dashboard: Failed to load transactions:", error);
+      }
+    };
+
+    loadTransactions();
+  }, [dispatch]);
 
   return (
     <SafeAreaView
@@ -49,7 +65,11 @@ export function DashboardScreen() {
         />
       </Appbar.Header>
 
-      <ScrollView style={styles.content}>
+      <ScrollView
+        style={styles.content}
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}
+      >
         {/* Quick Stats */}
         <View style={styles.section}>
           <Text variant="headlineSmall" style={styles.sectionTitle}>
@@ -288,7 +308,10 @@ const styles = StyleSheet.create({
   },
   content: {
     flex: 1,
+  },
+  scrollContent: {
     padding: 16,
+    paddingBottom: 100, // Extra padding to ensure FAB doesn't cover content
   },
   section: {
     marginBottom: 24,

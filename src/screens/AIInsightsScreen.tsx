@@ -269,6 +269,8 @@ export function AIInsightsScreen() {
 
       <ScrollView
         style={styles.content}
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}
         refreshControl={
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
         }
@@ -545,6 +547,9 @@ const styles = StyleSheet.create({
   },
   content: {
     flex: 1,
+  },
+  scrollContent: {
+    paddingBottom: 50, // Extra padding for better scrolling
   },
   timeframeContainer: {
     padding: 16,

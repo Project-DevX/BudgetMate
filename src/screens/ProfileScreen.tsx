@@ -94,7 +94,11 @@ export function ProfileScreen() {
         )}
       </Appbar.Header>
 
-      <ScrollView style={styles.content}>
+      <ScrollView
+        style={styles.content}
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}
+      >
         {/* Profile Header */}
         <Card style={styles.headerCard}>
           <Card.Content style={styles.headerContent}>
@@ -452,7 +456,10 @@ const styles = StyleSheet.create({
   },
   content: {
     flex: 1,
+  },
+  scrollContent: {
     padding: 16,
+    paddingBottom: 50, // Extra padding for better scrolling
   },
   editActions: {
     flexDirection: "row",

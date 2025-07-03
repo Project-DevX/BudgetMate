@@ -83,19 +83,9 @@ export const createTransaction = createAsyncThunk(
         "🔥 Creating transaction with Firebase service:",
         transactionData
       );
-
-      // Filter out undefined values before sending to Firebase
-      const cleanedData = Object.fromEntries(
-        Object.entries(transactionData).filter(
-          ([_, value]) => value !== undefined
-        )
-      ) as Omit<Transaction, "id" | "userId" | "createdAt" | "updatedAt">;
-
-      console.log("🔥 Cleaned transaction data:", cleanedData);
-
       // 🔥 Use Firebase service
       const response = await firebaseTransactionService.createTransaction(
-        cleanedData
+        transactionData
       );
       if (response.success && response.data) {
         console.log(
@@ -207,37 +197,6 @@ export const getTransactionsByDateRange = createAsyncThunk(
   }
 );
 
-// Simple fetch all transactions (to avoid index requirements)
-export const fetchAllTransactions = createAsyncThunk(
-  "transactions/fetchAllTransactions",
-  async (_, { rejectWithValue }) => {
-    try {
-      console.log("🔥 Fetching all transactions from Firebase...");
-
-      // 🔥 Use simpler method to avoid index requirements
-      const response = await firebaseTransactionService.getAllTransactions();
-      if (response.success && response.data) {
-        console.log(
-          "🔥 Fetched",
-          response.data.length,
-          "transactions successfully"
-        );
-        return {
-          data: response.data,
-          total: response.data.length,
-          page: 1,
-          limit: response.data.length,
-          totalPages: 1,
-        };
-      }
-      return rejectWithValue(response.error || "Failed to fetch transactions");
-    } catch (error: any) {
-      console.error("❌ Error fetching transactions:", error);
-      return rejectWithValue(error.message || "Failed to fetch transactions");
-    }
-  }
-);
-
 // Transaction slice (rest remains the same)
 const transactionSlice = createSlice({
   name: "transactions",
@@ -299,28 +258,6 @@ const transactionSlice = createSlice({
         };
       })
       .addCase(fetchTransactions.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.payload as string;
-      });
-
-    // Fetch all transactions (simple version)
-    builder
-      .addCase(fetchAllTransactions.pending, (state) => {
-        state.loading = true;
-        state.error = null;
-      })
-      .addCase(fetchAllTransactions.fulfilled, (state, action) => {
-        state.loading = false;
-        state.transactions = action.payload.data;
-        state.pagination = {
-          page: action.payload.page,
-          limit: action.payload.limit,
-          total: action.payload.total,
-          hasNextPage: action.payload.page < action.payload.totalPages,
-          hasPreviousPage: action.payload.page > 1,
-        };
-      })
-      .addCase(fetchAllTransactions.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload as string;
       });

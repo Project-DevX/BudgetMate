@@ -184,7 +184,11 @@ export function AddBudgetScreen() {
         <Appbar.Content title="Create Budget" />
       </Appbar.Header>
 
-      <ScrollView contentContainerStyle={styles.scrollContent}>
+      <ScrollView
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}
+        keyboardShouldPersistTaps="handled"
+      >
         <View style={styles.content}>
           <Text
             variant="headlineMedium"

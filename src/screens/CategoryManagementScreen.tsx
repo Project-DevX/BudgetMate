@@ -493,6 +493,7 @@ export function CategoryManagementScreen() {
       {/* Categories List */}
       <ScrollView
         style={styles.categoriesList}
+        contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
         {filteredCategories.map((category) => (
@@ -715,6 +716,9 @@ const styles = StyleSheet.create({
   categoriesList: {
     flex: 1,
     paddingHorizontal: 16,
+  },
+  scrollContent: {
+    paddingBottom: 50, // Extra padding for better scrolling
   },
   categoryItem: {
     marginBottom: 8,

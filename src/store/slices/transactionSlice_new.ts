@@ -5,11 +5,14 @@ import {
   TransactionFilters,
   PaginatedResponse,
 } from "../../types";
-import { firebaseTransactionService } from "../../services/firebaseTransactionService";
+import { FirebaseTransactionService } from "../../services/firebaseTransactionService";
 import { format } from "date-fns";
 import { DATE_FORMATS } from "../../constants";
 
-// Initial state (same as before)
+// Use Firebase service instead of API service
+const firebaseTransactionService = new FirebaseTransactionService();
+
+// Initial state
 const initialState: TransactionState = {
   transactions: [],
   loading: false,
@@ -36,7 +39,7 @@ const initialState: TransactionState = {
   },
 };
 
-// 🔥 Firebase Async Thunks
+// Async thunks
 export const fetchTransactions = createAsyncThunk(
   "transactions/fetchTransactions",
   async (
@@ -53,7 +56,6 @@ export const fetchTransactions = createAsyncThunk(
       const page = params.page || state.transactions.pagination.page;
       const limit = params.limit || state.transactions.pagination.limit;
 
-      // 🔥 Use Firebase service instead of API service
       const response = await firebaseTransactionService.getTransactions(
         filters,
         page,
@@ -80,34 +82,23 @@ export const createTransaction = createAsyncThunk(
   ) => {
     try {
       console.log(
-        "🔥 Creating transaction with Firebase service:",
+        "Creating transaction with Firebase service:",
         transactionData
       );
-
-      // Filter out undefined values before sending to Firebase
-      const cleanedData = Object.fromEntries(
-        Object.entries(transactionData).filter(
-          ([_, value]) => value !== undefined
-        )
-      ) as Omit<Transaction, "id" | "userId" | "createdAt" | "updatedAt">;
-
-      console.log("🔥 Cleaned transaction data:", cleanedData);
-
-      // 🔥 Use Firebase service
       const response = await firebaseTransactionService.createTransaction(
-        cleanedData
+        transactionData
       );
       if (response.success && response.data) {
         console.log(
-          "🔥 Transaction created successfully in Firebase:",
+          "Transaction created successfully in Firebase:",
           response.data
         );
         return response.data;
       }
-      console.error("❌ Failed to create transaction:", response.error);
+      console.error("Failed to create transaction:", response.error);
       return rejectWithValue(response.error || "Failed to create transaction");
     } catch (error: any) {
-      console.error("❌ Error creating transaction:", error);
+      console.error("Error creating transaction:", error);
       return rejectWithValue(error.message || "Failed to create transaction");
     }
   }
@@ -120,7 +111,6 @@ export const updateTransaction = createAsyncThunk(
     { rejectWithValue }
   ) => {
     try {
-      // 🔥 Use Firebase service
       const response = await firebaseTransactionService.updateTransaction(
         id,
         data
@@ -139,7 +129,6 @@ export const deleteTransaction = createAsyncThunk(
   "transactions/deleteTransaction",
   async (id: string, { rejectWithValue }) => {
     try {
-      // 🔥 Use Firebase service
       const response = await firebaseTransactionService.deleteTransaction(id);
       if (response.success) {
         return id;
@@ -151,94 +140,7 @@ export const deleteTransaction = createAsyncThunk(
   }
 );
 
-// Bulk operations
-export const bulkCreateTransactions = createAsyncThunk(
-  "transactions/bulkCreateTransactions",
-  async (
-    transactions: Omit<
-      Transaction,
-      "id" | "userId" | "createdAt" | "updatedAt"
-    >[],
-    { rejectWithValue }
-  ) => {
-    try {
-      // 🔥 Use Firebase bulk create
-      const response = await firebaseTransactionService.bulkCreateTransactions(
-        transactions
-      );
-      if (response.success && response.data) {
-        return response.data;
-      }
-      return rejectWithValue(
-        response.error || "Failed to bulk create transactions"
-      );
-    } catch (error: any) {
-      return rejectWithValue(
-        error.message || "Failed to bulk create transactions"
-      );
-    }
-  }
-);
-
-export const getTransactionsByDateRange = createAsyncThunk(
-  "transactions/getTransactionsByDateRange",
-  async (
-    { startDate, endDate }: { startDate: Date; endDate: Date },
-    { rejectWithValue }
-  ) => {
-    try {
-      // 🔥 Use Firebase date range query
-      const response =
-        await firebaseTransactionService.getTransactionsByDateRange(
-          startDate,
-          endDate
-        );
-      if (response.success && response.data) {
-        return response.data;
-      }
-      return rejectWithValue(
-        response.error || "Failed to get transactions by date range"
-      );
-    } catch (error: any) {
-      return rejectWithValue(
-        error.message || "Failed to get transactions by date range"
-      );
-    }
-  }
-);
-
-// Simple fetch all transactions (to avoid index requirements)
-export const fetchAllTransactions = createAsyncThunk(
-  "transactions/fetchAllTransactions",
-  async (_, { rejectWithValue }) => {
-    try {
-      console.log("🔥 Fetching all transactions from Firebase...");
-
-      // 🔥 Use simpler method to avoid index requirements
-      const response = await firebaseTransactionService.getAllTransactions();
-      if (response.success && response.data) {
-        console.log(
-          "🔥 Fetched",
-          response.data.length,
-          "transactions successfully"
-        );
-        return {
-          data: response.data,
-          total: response.data.length,
-          page: 1,
-          limit: response.data.length,
-          totalPages: 1,
-        };
-      }
-      return rejectWithValue(response.error || "Failed to fetch transactions");
-    } catch (error: any) {
-      console.error("❌ Error fetching transactions:", error);
-      return rejectWithValue(error.message || "Failed to fetch transactions");
-    }
-  }
-);
-
-// Transaction slice (rest remains the same)
+// Simplified slice
 const transactionSlice = createSlice({
   name: "transactions",
   initialState,
@@ -249,20 +151,12 @@ const transactionSlice = createSlice({
     clearFilters: (state) => {
       state.filters = initialState.filters;
     },
-    setPagination: (
-      state,
-      action: PayloadAction<Partial<typeof initialState.pagination>>
-    ) => {
-      state.pagination = { ...state.pagination, ...action.payload };
+    setPage: (state, action: PayloadAction<number>) => {
+      state.pagination.page = action.payload;
     },
     clearError: (state) => {
       state.error = null;
     },
-    // 🔥 Add real-time transaction sync
-    syncTransactions: (state, action: PayloadAction<Transaction[]>) => {
-      state.transactions = action.payload;
-    },
-    // Additional local state management
     addTransaction: (state, action: PayloadAction<Transaction>) => {
       state.transactions.unshift(action.payload);
     },
@@ -281,8 +175,8 @@ const transactionSlice = createSlice({
     },
   },
   extraReducers: (builder) => {
-    // Fetch transactions
     builder
+      // Fetch transactions
       .addCase(fetchTransactions.pending, (state) => {
         state.loading = true;
         state.error = null;
@@ -301,32 +195,8 @@ const transactionSlice = createSlice({
       .addCase(fetchTransactions.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload as string;
-      });
-
-    // Fetch all transactions (simple version)
-    builder
-      .addCase(fetchAllTransactions.pending, (state) => {
-        state.loading = true;
-        state.error = null;
       })
-      .addCase(fetchAllTransactions.fulfilled, (state, action) => {
-        state.loading = false;
-        state.transactions = action.payload.data;
-        state.pagination = {
-          page: action.payload.page,
-          limit: action.payload.limit,
-          total: action.payload.total,
-          hasNextPage: action.payload.page < action.payload.totalPages,
-          hasPreviousPage: action.payload.page > 1,
-        };
-      })
-      .addCase(fetchAllTransactions.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.payload as string;
-      });
-
-    // Create transaction
-    builder
+      // Create transaction
       .addCase(createTransaction.pending, (state) => {
         state.loading = true;
         state.error = null;
@@ -334,17 +204,19 @@ const transactionSlice = createSlice({
       .addCase(createTransaction.fulfilled, (state, action) => {
         state.loading = false;
         state.transactions.unshift(action.payload);
-        console.log("🔥 Transaction added to Redux store:", action.payload);
+        console.log("Transaction added to Redux store:", action.payload);
       })
       .addCase(createTransaction.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload as string;
-        console.error("❌ Transaction creation failed:", action.payload);
-      });
-
-    // Update transaction
-    builder
+        console.error("Transaction creation failed:", action.payload);
+      })
+      // Update transaction
+      .addCase(updateTransaction.pending, (state) => {
+        state.loading = true;
+      })
       .addCase(updateTransaction.fulfilled, (state, action) => {
+        state.loading = false;
         const index = state.transactions.findIndex(
           (t) => t.id === action.payload.id
         );
@@ -353,26 +225,21 @@ const transactionSlice = createSlice({
         }
       })
       .addCase(updateTransaction.rejected, (state, action) => {
+        state.loading = false;
         state.error = action.payload as string;
-      });
-
-    // Delete transaction
-    builder
+      })
+      // Delete transaction
+      .addCase(deleteTransaction.pending, (state) => {
+        state.loading = true;
+      })
       .addCase(deleteTransaction.fulfilled, (state, action) => {
+        state.loading = false;
         state.transactions = state.transactions.filter(
           (t) => t.id !== action.payload
         );
       })
       .addCase(deleteTransaction.rejected, (state, action) => {
-        state.error = action.payload as string;
-      });
-
-    // Bulk create transactions
-    builder
-      .addCase(bulkCreateTransactions.fulfilled, (state, action) => {
-        state.transactions = [...action.payload, ...state.transactions];
-      })
-      .addCase(bulkCreateTransactions.rejected, (state, action) => {
+        state.loading = false;
         state.error = action.payload as string;
       });
   },
@@ -381,9 +248,8 @@ const transactionSlice = createSlice({
 export const {
   setFilters,
   clearFilters,
-  setPagination,
+  setPage,
   clearError,
-  syncTransactions,
   addTransaction,
   removeTransaction,
   updateTransactionInState,

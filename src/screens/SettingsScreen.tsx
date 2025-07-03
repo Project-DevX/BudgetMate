@@ -118,7 +118,11 @@ export function SettingsScreen() {
         <Appbar.Content title="Settings" />
       </Appbar.Header>
 
-      <ScrollView style={styles.content}>
+      <ScrollView
+        style={styles.content}
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}
+      >
         {/* Account Section */}
         <Card style={styles.card}>
           <Card.Content>
@@ -638,7 +642,10 @@ const styles = StyleSheet.create({
   },
   content: {
     flex: 1,
+  },
+  scrollContent: {
     padding: 16,
+    paddingBottom: 50, // Extra padding for better scrolling
   },
   card: {
     marginBottom: 16,

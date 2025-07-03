@@ -20,7 +20,11 @@ import { MaterialIcons } from "@expo/vector-icons";
 
 import { useAppSelector, useAppDispatch } from "../store";
 import { Transaction } from "../types";
-import { setFilters, clearFilters } from "../store/slices/transactionSlice";
+import {
+  setFilters,
+  clearFilters,
+  fetchAllTransactions,
+} from "../store/slices/transactionSlice";
 
 export function TransactionsScreen() {
   const theme = useTheme();
@@ -36,6 +40,21 @@ export function TransactionsScreen() {
   const [sortMenuVisible, setSortMenuVisible] = useState(false);
   const [viewMode, setViewMode] = useState<"list" | "summary">("list");
   const [refreshing, setRefreshing] = useState(false);
+
+  // Fetch transactions when component mounts
+  useEffect(() => {
+    const loadTransactions = async () => {
+      try {
+        console.log("🔥 Fetching transactions from Firebase...");
+        await dispatch(fetchAllTransactions()).unwrap();
+        console.log("✅ Transactions loaded successfully");
+      } catch (error) {
+        console.error("❌ Failed to load transactions:", error);
+      }
+    };
+
+    loadTransactions();
+  }, [dispatch]);
 
   // Filter and search transactions
   const filteredTransactions = transactions.filter((transaction) => {
@@ -79,8 +98,11 @@ export function TransactionsScreen() {
 
   const onRefresh = async () => {
     setRefreshing(true);
-    // In a real app, you would fetch fresh data here
-    // await dispatch(fetchTransactions());
+    try {
+      await dispatch(fetchAllTransactions()).unwrap();
+    } catch (error) {
+      console.error("Failed to fetch transactions:", error);
+    }
     setRefreshing(false);
   };
 
@@ -246,6 +268,8 @@ export function TransactionsScreen() {
         /* Summary View */
         <ScrollView
           style={styles.content}
+          contentContainerStyle={styles.scrollContent}
+          showsVerticalScrollIndicator={false}
           refreshControl={
             <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
           }
@@ -328,6 +352,8 @@ export function TransactionsScreen() {
         /* List View */
         <ScrollView
           style={styles.content}
+          contentContainerStyle={styles.scrollContent}
+          showsVerticalScrollIndicator={false}
           refreshControl={
             <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
           }
@@ -488,7 +514,10 @@ const styles = StyleSheet.create({
   },
   content: {
     flex: 1,
+  },
+  scrollContent: {
     padding: 16,
+    paddingBottom: 100, // Extra padding to ensure FAB doesn't cover content
   },
   summaryContainer: {
     gap: 16,

@@ -208,7 +208,11 @@ export function AddBillScreen() {
         <Appbar.Content title="Add Bill" />
       </Appbar.Header>
 
-      <ScrollView contentContainerStyle={styles.scrollContent}>
+      <ScrollView
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}
+        keyboardShouldPersistTaps="handled"
+      >
         <View style={styles.content}>
           <Text
             variant="headlineMedium"

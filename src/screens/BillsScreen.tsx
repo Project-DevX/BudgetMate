@@ -248,6 +248,8 @@ export function BillsScreen() {
 
       <ScrollView
         style={styles.content}
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}
         refreshControl={
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
         }
@@ -514,7 +516,10 @@ const styles = StyleSheet.create({
   },
   content: {
     flex: 1,
+  },
+  scrollContent: {
     padding: 16,
+    paddingBottom: 100, // Extra padding to ensure FAB doesn't cover content
   },
   summaryCard: {
     marginBottom: 16,

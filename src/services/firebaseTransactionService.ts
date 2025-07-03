@@ -54,12 +54,17 @@ export class FirebaseTransactionService {
         updatedAt: new Date().toISOString(),
       };
 
-      await setDoc(transactionRef, {
-        ...transaction,
-        date: Timestamp.fromDate(new Date(transaction.date)),
-        createdAt: Timestamp.fromDate(new Date(transaction.createdAt)),
-        updatedAt: Timestamp.fromDate(new Date(transaction.updatedAt)),
-      });
+      // Filter out undefined values to avoid Firestore errors
+      const firestoreData = Object.fromEntries(
+        Object.entries({
+          ...transaction,
+          date: Timestamp.fromDate(new Date(transaction.date)),
+          createdAt: Timestamp.fromDate(new Date(transaction.createdAt)),
+          updatedAt: Timestamp.fromDate(new Date(transaction.updatedAt)),
+        }).filter(([_, value]) => value !== undefined)
+      );
+
+      await setDoc(transactionRef, firestoreData);
 
       console.log("Transaction created successfully:", transaction.id);
       return {
@@ -121,54 +126,59 @@ export class FirebaseTransactionService {
   ): Promise<ApiResponse<PaginatedResponse<Transaction>>> {
     try {
       const userId = this.getUserId();
+
+      // Start with basic query - userId filter and date ordering
+      // This should work without requiring additional indexes
       let q = query(
         this.getCollectionRef(),
         where("userId", "==", userId),
-        orderBy("date", "desc")
+        orderBy("date", "desc"),
+        limit(pageSize * page) // Get enough for pagination
       );
 
-      // Apply filters
-      if (filters.accounts && filters.accounts.length > 0) {
-        q = query(q, where("accountId", "in", filters.accounts));
-      }
-      if (filters.categories && filters.categories.length > 0) {
-        q = query(q, where("category", "in", filters.categories));
-      }
-      if (filters.dateRange?.startDate) {
-        q = query(
-          q,
-          where(
-            "date",
-            ">=",
-            Timestamp.fromDate(new Date(filters.dateRange.startDate))
-          )
-        );
-      }
-      if (filters.dateRange?.endDate) {
-        q = query(
-          q,
-          where(
-            "date",
-            "<=",
-            Timestamp.fromDate(new Date(filters.dateRange.endDate))
-          )
-        );
-      }
-
-      // Apply pagination
-      const pageLimit = pageSize;
-      q = query(q, limit(pageLimit));
-
+      console.log("🔥 Fetching transactions for user:", userId);
       const querySnapshot = await getDocs(q);
-      const transactions = querySnapshot.docs.map((doc) =>
+      console.log("🔥 Found", querySnapshot.docs.length, "transactions");
+
+      let transactions = querySnapshot.docs.map((doc) =>
         this.convertFirestoreTransaction(doc)
       );
 
-      // Filter by search if provided
+      // Apply client-side filtering for now to avoid index requirements
       let filteredTransactions = transactions;
+
+      // Filter by accounts
+      if (filters.accounts && filters.accounts.length > 0) {
+        filteredTransactions = filteredTransactions.filter((transaction) =>
+          filters.accounts!.includes(transaction.accountId)
+        );
+      }
+
+      // Filter by categories
+      if (filters.categories && filters.categories.length > 0) {
+        filteredTransactions = filteredTransactions.filter((transaction) =>
+          filters.categories!.includes(transaction.category)
+        );
+      }
+
+      // Filter by date range
+      if (filters.dateRange?.startDate) {
+        const startDate = new Date(filters.dateRange.startDate);
+        filteredTransactions = filteredTransactions.filter(
+          (transaction) => new Date(transaction.date) >= startDate
+        );
+      }
+      if (filters.dateRange?.endDate) {
+        const endDate = new Date(filters.dateRange.endDate);
+        filteredTransactions = filteredTransactions.filter(
+          (transaction) => new Date(transaction.date) <= endDate
+        );
+      }
+
+      // Filter by search if provided
       if (filters.search && filters.search.trim()) {
         const searchTerm = filters.search.toLowerCase();
-        filteredTransactions = transactions.filter(
+        filteredTransactions = filteredTransactions.filter(
           (transaction) =>
             transaction.description.toLowerCase().includes(searchTerm) ||
             transaction.merchant?.toLowerCase().includes(searchTerm) ||
@@ -203,6 +213,39 @@ export class FirebaseTransactionService {
       };
     } catch (error: any) {
       console.error("Error getting transactions:", error);
+      return {
+        success: false,
+        error: error.message || "Failed to get transactions",
+      };
+    }
+  }
+
+  // Simple method to get all transactions for a user (no complex filtering)
+  async getAllTransactions(): Promise<ApiResponse<Transaction[]>> {
+    try {
+      const userId = this.getUserId();
+
+      // Simple query - just user filter and date ordering
+      const q = query(
+        this.getCollectionRef(),
+        where("userId", "==", userId),
+        orderBy("date", "desc")
+      );
+
+      console.log("🔥 Fetching all transactions for user:", userId);
+      const querySnapshot = await getDocs(q);
+      console.log("🔥 Found", querySnapshot.docs.length, "transactions");
+
+      const transactions = querySnapshot.docs.map((doc) =>
+        this.convertFirestoreTransaction(doc)
+      );
+
+      return {
+        success: true,
+        data: transactions,
+      };
+    } catch (error: any) {
+      console.error("Error getting all transactions:", error);
       return {
         success: false,
         error: error.message || "Failed to get transactions",
