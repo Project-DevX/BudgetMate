@@ -549,7 +549,8 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   scrollContent: {
-    paddingBottom: 50, // Extra padding for better scrolling
+    paddingTop: 16,
+    paddingBottom: 100, // Extra padding to ensure FAB doesn't cover content
   },
   timeframeContainer: {
     padding: 16,
