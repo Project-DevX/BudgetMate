@@ -1,30 +1,28 @@
-import React from 'react';
-import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { createStackNavigator } from '@react-navigation/stack';
-import { MaterialIcons } from '@expo/vector-icons';
-import { useTheme } from 'react-native-paper';
+import React from "react";
+import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
+import { createStackNavigator } from "@react-navigation/stack";
+import { MaterialIcons } from "@expo/vector-icons";
+import { useTheme } from "react-native-paper";
 
 // Screens
-import { DashboardScreen } from '../screens/DashboardScreen';
-import {
-  TransactionsScreen,
-  BudgetsScreen,
-  BillsScreen,
-  AccountsScreen,
-  SettingsScreen,
-  ProfileScreen,
-  AddTransactionScreen,
-  AddBudgetScreen,
-  AddBillScreen,
-  TransactionDetailScreen,
-  BudgetDetailScreen,
-  BillDetailScreen,
-  StatementUploadScreen,
-  AIInsightsScreen,
-  CategoryManagementScreen,
-} from '../screens/ScreenPlaceholders';
+import { DashboardScreen } from "../screens/DashboardScreen";
+import { AddTransactionScreen } from "../screens/AddTransactionScreen";
+import { TransactionsScreen } from "../screens/TransactionsScreen";
+import { AIInsightsScreen } from "../screens/AIInsightsScreen";
+import { BudgetsScreen } from "../screens/BudgetsScreen";
+import { BillsScreen } from "../screens/BillsScreen";
+import { AccountsScreen } from "../screens/AccountsScreen";
+import { SettingsScreen } from "../screens/SettingsScreen";
+import { ProfileScreen } from "../screens/ProfileScreen";
+import { AddBudgetScreen } from "../screens/AddBudgetScreen";
+import { AddBillScreen } from "../screens/AddBillScreen";
+import { StatementUploadScreen } from "../screens/StatementUploadScreen";
+import { TransactionDetailScreen } from "../screens/TransactionDetailScreen";
+import { BudgetDetailScreen } from "../screens/BudgetDetailScreen";
+import { BillDetailScreen } from "../screens/BillDetailScreen";
+import { CategoryManagementScreen } from "../screens/CategoryManagementScreen";
 
-import { RootStackParamList } from '../types';
+import { RootStackParamList } from "../types";
 
 const Tab = createBottomTabNavigator();
 const Stack = createStackNavigator<RootStackParamList>();
@@ -38,18 +36,18 @@ function TabNavigator() {
         tabBarIcon: ({ focused, color, size }) => {
           let iconName: keyof typeof MaterialIcons.glyphMap;
 
-          if (route.name === 'Dashboard') {
-            iconName = 'dashboard';
-          } else if (route.name === 'Transactions') {
-            iconName = 'receipt';
-          } else if (route.name === 'Budgets') {
-            iconName = 'pie-chart';
-          } else if (route.name === 'Bills') {
-            iconName = 'schedule';
-          } else if (route.name === 'Accounts') {
-            iconName = 'account-balance';
+          if (route.name === "Dashboard") {
+            iconName = "dashboard";
+          } else if (route.name === "Transactions") {
+            iconName = "receipt";
+          } else if (route.name === "Budgets") {
+            iconName = "pie-chart";
+          } else if (route.name === "Bills") {
+            iconName = "schedule";
+          } else if (route.name === "Accounts") {
+            iconName = "account-balance";
           } else {
-            iconName = 'dashboard';
+            iconName = "dashboard";
           }
 
           return <MaterialIcons name={iconName} size={size} color={color} />;
@@ -66,43 +64,43 @@ function TabNavigator() {
         headerTintColor: theme.colors.onSurface,
       })}
     >
-      <Tab.Screen 
-        name="Dashboard" 
+      <Tab.Screen
+        name="Dashboard"
         component={DashboardScreen}
-        options={{ 
-          title: 'Dashboard',
+        options={{
+          title: "Dashboard",
           headerShown: false,
         }}
       />
-      <Tab.Screen 
-        name="Transactions" 
+      <Tab.Screen
+        name="Transactions"
         component={TransactionsScreen}
-        options={{ 
-          title: 'Transactions',
+        options={{
+          title: "Transactions",
           headerShown: false,
         }}
       />
-      <Tab.Screen 
-        name="Budgets" 
+      <Tab.Screen
+        name="Budgets"
         component={BudgetsScreen}
-        options={{ 
-          title: 'Budgets',
+        options={{
+          title: "Budgets",
           headerShown: false,
         }}
       />
-      <Tab.Screen 
-        name="Bills" 
+      <Tab.Screen
+        name="Bills"
         component={BillsScreen}
-        options={{ 
-          title: 'Bills',
+        options={{
+          title: "Bills",
           headerShown: false,
         }}
       />
-      <Tab.Screen 
-        name="Accounts" 
+      <Tab.Screen
+        name="Accounts"
         component={AccountsScreen}
-        options={{ 
-          title: 'Accounts',
+        options={{
+          title: "Accounts",
           headerShown: false,
         }}
       />
@@ -121,81 +119,81 @@ export function RootNavigator() {
         },
         headerTintColor: theme.colors.onSurface,
         headerTitleStyle: {
-          fontWeight: 'bold',
+          fontWeight: "bold",
         },
       }}
     >
-      <Stack.Screen 
-        name="Home" 
+      <Stack.Screen
+        name="Home"
         component={TabNavigator}
         options={{ headerShown: false }}
       />
-      <Stack.Screen 
-        name="Settings" 
+      <Stack.Screen
+        name="Settings"
         component={SettingsScreen}
-        options={{ title: 'Settings' }}
+        options={{ title: "Settings" }}
       />
-      <Stack.Screen 
-        name="Profile" 
+      <Stack.Screen
+        name="Profile"
         component={ProfileScreen}
-        options={{ title: 'Profile' }}
+        options={{ title: "Profile" }}
       />
-      <Stack.Screen 
-        name="AddTransaction" 
+      <Stack.Screen
+        name="AddTransaction"
         component={AddTransactionScreen}
-        options={{ 
-          title: 'Add Transaction',
-          presentation: 'modal',
+        options={{
+          title: "Add Transaction",
+          presentation: "modal",
         }}
       />
-      <Stack.Screen 
-        name="AddBudget" 
+      <Stack.Screen
+        name="AddBudget"
         component={AddBudgetScreen}
-        options={{ 
-          title: 'Add Budget',
-          presentation: 'modal',
+        options={{
+          title: "Add Budget",
+          presentation: "modal",
         }}
       />
-      <Stack.Screen 
-        name="AddBill" 
+      <Stack.Screen
+        name="AddBill"
         component={AddBillScreen}
-        options={{ 
-          title: 'Add Bill',
-          presentation: 'modal',
+        options={{
+          title: "Add Bill",
+          presentation: "modal",
         }}
       />
-      <Stack.Screen 
-        name="TransactionDetail" 
+      <Stack.Screen
+        name="TransactionDetail"
         component={TransactionDetailScreen}
-        options={{ title: 'Transaction Details' }}
+        options={{ title: "Transaction Details" }}
       />
-      <Stack.Screen 
-        name="BudgetDetail" 
+      <Stack.Screen
+        name="BudgetDetail"
         component={BudgetDetailScreen}
-        options={{ title: 'Budget Details' }}
+        options={{ title: "Budget Details" }}
       />
-      <Stack.Screen 
-        name="BillDetail" 
+      <Stack.Screen
+        name="BillDetail"
         component={BillDetailScreen}
-        options={{ title: 'Bill Details' }}
+        options={{ title: "Bill Details" }}
       />
-      <Stack.Screen 
-        name="StatementUpload" 
+      <Stack.Screen
+        name="StatementUpload"
         component={StatementUploadScreen}
-        options={{ 
-          title: 'Upload Statement',
-          presentation: 'modal',
+        options={{
+          title: "Upload Statement",
+          presentation: "modal",
         }}
       />
-      <Stack.Screen 
-        name="AIInsights" 
+      <Stack.Screen
+        name="AIInsights"
         component={AIInsightsScreen}
-        options={{ title: 'AI Insights' }}
+        options={{ title: "AI Insights" }}
       />
-      <Stack.Screen 
-        name="CategoryManagement" 
+      <Stack.Screen
+        name="CategoryManagement"
         component={CategoryManagementScreen}
-        options={{ title: 'Manage Categories' }}
+        options={{ title: "Manage Categories" }}
       />
     </Stack.Navigator>
   );
