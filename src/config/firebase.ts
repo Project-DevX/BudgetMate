@@ -1,8 +1,6 @@
-import { initializeApp } from "firebase/app";
-import { getAuth, initializeAuth } from "firebase/auth";
+import { initializeApp, getApps } from "firebase/app";
+import { getAuth } from "firebase/auth";
 import { getFirestore } from "firebase/firestore";
-import { Platform } from "react-native";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 
 // Your Firebase config - You'll need to get these from Firebase Console
 const firebaseConfig = {
@@ -20,14 +18,26 @@ const firebaseConfig = {
     process.env.EXPO_PUBLIC_FIREBASE_APP_ID || "1:123456789:web:abcdef123456",
 };
 
-// Initialize Firebase
-const app = initializeApp(firebaseConfig);
+// Initialize Firebase - check if already initialized to avoid errors
+let app;
+if (getApps().length === 0) {
+  console.log("Firebase: Initializing Firebase app...");
+  app = initializeApp(firebaseConfig);
+  console.log("Firebase: App initialized successfully");
+} else {
+  console.log("Firebase: Using existing Firebase app");
+  app = getApps()[0];
+}
 
-// Initialize Auth - Firebase will handle persistence automatically
+// Initialize Auth - Firebase web SDK works with Expo Go
+console.log("Firebase: Initializing Auth...");
 const auth = getAuth(app);
+console.log("Firebase: Auth initialized successfully");
 
 // Initialize Firestore
+console.log("Firebase: Initializing Firestore...");
 const db = getFirestore(app);
+console.log("Firebase: Firestore initialized successfully");
 
 export { auth, db };
 export default app;

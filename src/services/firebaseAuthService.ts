@@ -18,7 +18,14 @@ import { User, ApiResponse } from "../types";
 export class FirebaseAuthService {
   // Listen to auth state changes
   onAuthStateChanged(callback: (user: FirebaseUser | null) => void) {
-    return onAuthStateChanged(auth, callback);
+    console.log("FirebaseAuthService: Setting up auth state listener");
+    return onAuthStateChanged(auth, (user) => {
+      console.log(
+        "FirebaseAuthService: Auth state changed",
+        user ? "User exists" : "No user"
+      );
+      callback(user);
+    });
   }
 
   // Convert Firebase user to our User type

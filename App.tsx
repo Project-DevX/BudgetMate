@@ -26,16 +26,25 @@ function AppContent() {
   const { theme } = useAppSelector((state) => state.ui);
 
   useEffect(() => {
+    console.log("App: Setting up Firebase auth state listener...");
+
     // Listen to Firebase auth state changes
     const unsubscribe = firebaseAuthService.onAuthStateChanged(
       async (firebaseUser) => {
         try {
+          console.log(
+            "App: Auth state changed",
+            firebaseUser ? "User logged in" : "No user"
+          );
+
           if (firebaseUser) {
             // User is signed in, convert to our User type
+            console.log("App: Converting Firebase user...");
             const response = await firebaseAuthService.validateToken(
               await firebaseUser.getIdToken()
             );
             if (response.success && response.data) {
+              console.log("App: Setting authenticated user");
               dispatch(
                 setAuthState({
                   isAuthenticated: true,
@@ -47,6 +56,7 @@ function AppContent() {
             }
           } else {
             // User is signed out
+            console.log("App: Setting unauthenticated state");
             dispatch(
               setAuthState({
                 isAuthenticated: false,
@@ -57,15 +67,19 @@ function AppContent() {
             );
           }
         } catch (error) {
-          console.error("Auth state change error:", error);
+          console.error("App: Auth state change error:", error);
           dispatch(clearError());
         } finally {
+          console.log("App: Setting loading to false");
           dispatch(setLoading(false));
         }
       }
     );
 
-    return () => unsubscribe(); // Cleanup subscription on unmount
+    return () => {
+      console.log("App: Cleaning up auth listener");
+      unsubscribe();
+    };
   }, [dispatch]);
 
   if (loading) {
