@@ -1,8 +1,16 @@
-import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
-import { TransactionState, Transaction, TransactionFilters, PaginatedResponse } from '../../types';
-import { transactionService } from '../../services/transactionService';
-import { format } from 'date-fns';
-import { DATE_FORMATS } from '../../constants';
+import { createSlice, createAsyncThunk, PayloadAction } from "@reduxjs/toolkit";
+import {
+  TransactionState,
+  Transaction,
+  TransactionFilters,
+  PaginatedResponse,
+} from "../../types";
+import { FirebaseTransactionService } from "../../services/firebaseTransactionService";
+import { format } from "date-fns";
+import { DATE_FORMATS } from "../../constants";
+
+// Use Firebase service instead of API service
+const firebaseTransactionService = new FirebaseTransactionService();
 
 // Initial state
 const initialState: TransactionState = {
@@ -11,13 +19,16 @@ const initialState: TransactionState = {
   error: null,
   filters: {
     dateRange: {
-      startDate: format(new Date(new Date().getFullYear(), new Date().getMonth(), 1), DATE_FORMATS.API),
+      startDate: format(
+        new Date(new Date().getFullYear(), new Date().getMonth(), 1),
+        DATE_FORMATS.API
+      ),
       endDate: format(new Date(), DATE_FORMATS.API),
     },
     categories: [],
     accounts: [],
     amountRange: { min: 0, max: 10000 },
-    search: '',
+    search: "",
   },
   pagination: {
     page: 1,
@@ -30,133 +41,153 @@ const initialState: TransactionState = {
 
 // Async thunks
 export const fetchTransactions = createAsyncThunk(
-  'transactions/fetchTransactions',
-  async (params?: { filters?: Partial<TransactionFilters>; page?: number; limit?: number }, { rejectWithValue, getState }) => {
+  "transactions/fetchTransactions",
+  async (
+    params?: {
+      filters?: Partial<TransactionFilters>;
+      page?: number;
+      limit?: number;
+    },
+    { rejectWithValue, getState }
+  ) => {
     try {
       const state = getState() as { transactions: TransactionState };
       const filters = { ...state.transactions.filters, ...params?.filters };
       const page = params?.page || state.transactions.pagination.page;
       const limit = params?.limit || state.transactions.pagination.limit;
 
-      const response = await transactionService.getTransactions({ filters, page, limit });
+      const response = await firebaseTransactionService.getTransactions(
+        filters,
+        page,
+        limit
+      );
       if (response.success && response.data) {
         return response.data;
       }
-      return rejectWithValue(response.error || 'Failed to fetch transactions');
+      return rejectWithValue(response.error || "Failed to fetch transactions");
     } catch (error: any) {
-      return rejectWithValue(error.message || 'Failed to fetch transactions');
+      return rejectWithValue(error.message || "Failed to fetch transactions");
     }
   }
 );
 
 export const createTransaction = createAsyncThunk(
-  'transactions/createTransaction',
-  async (transactionData: Omit<Transaction, 'id' | 'userId' | 'createdAt' | 'updatedAt'>, { rejectWithValue }) => {
+  "transactions/createTransaction",
+  async (
+    transactionData: Omit<
+      Transaction,
+      "id" | "userId" | "createdAt" | "updatedAt"
+    >,
+    { rejectWithValue }
+  ) => {
     try {
-      const response = await transactionService.createTransaction(transactionData);
+      const response = await firebaseTransactionService.createTransaction(
+        transactionData
+      );
       if (response.success && response.data) {
         return response.data;
       }
-      return rejectWithValue(response.error || 'Failed to create transaction');
+      return rejectWithValue(response.error || "Failed to create transaction");
     } catch (error: any) {
-      return rejectWithValue(error.message || 'Failed to create transaction');
+      return rejectWithValue(error.message || "Failed to create transaction");
     }
   }
 );
 
 export const updateTransaction = createAsyncThunk(
-  'transactions/updateTransaction',
-  async ({ id, data }: { id: string; data: Partial<Transaction> }, { rejectWithValue }) => {
+  "transactions/updateTransaction",
+  async (
+    { id, data }: { id: string; data: Partial<Transaction> },
+    { rejectWithValue }
+  ) => {
     try {
-      const response = await transactionService.updateTransaction(id, data);
+      const response = await firebaseTransactionService.updateTransaction(
+        id,
+        data
+      );
       if (response.success && response.data) {
         return response.data;
       }
-      return rejectWithValue(response.error || 'Failed to update transaction');
+      return rejectWithValue(response.error || "Failed to update transaction");
     } catch (error: any) {
-      return rejectWithValue(error.message || 'Failed to update transaction');
+      return rejectWithValue(error.message || "Failed to update transaction");
     }
   }
 );
 
 export const deleteTransaction = createAsyncThunk(
-  'transactions/deleteTransaction',
+  "transactions/deleteTransaction",
   async (id: string, { rejectWithValue }) => {
     try {
-      const response = await transactionService.deleteTransaction(id);
+      const response = await firebaseTransactionService.deleteTransaction(id);
       if (response.success) {
         return id;
       }
-      return rejectWithValue(response.error || 'Failed to delete transaction');
+      return rejectWithValue(response.error || "Failed to delete transaction");
     } catch (error: any) {
-      return rejectWithValue(error.message || 'Failed to delete transaction');
+      return rejectWithValue(error.message || "Failed to delete transaction");
     }
   }
 );
 
 export const syncTransactions = createAsyncThunk(
-  'transactions/syncTransactions',
+  "transactions/syncTransactions",
   async (_, { rejectWithValue }) => {
     try {
-      const response = await transactionService.syncTransactions();
-      if (response.success && response.data) {
-        return response.data;
-      }
-      return rejectWithValue(response.error || 'Failed to sync transactions');
+      // TODO: Implement sync functionality with Firebase
+      return [];
     } catch (error: any) {
-      return rejectWithValue(error.message || 'Failed to sync transactions');
+      return rejectWithValue(error.message || "Failed to sync transactions");
     }
   }
 );
 
 export const categorizeTransactions = createAsyncThunk(
-  'transactions/categorizeTransactions',
+  "transactions/categorizeTransactions",
   async (transactionIds: string[], { rejectWithValue }) => {
     try {
-      const response = await transactionService.categorizeTransactions(transactionIds);
-      if (response.success && response.data) {
-        return response.data;
-      }
-      return rejectWithValue(response.error || 'Failed to categorize transactions');
+      // TODO: Implement categorization with Firebase
+      return [];
     } catch (error: any) {
-      return rejectWithValue(error.message || 'Failed to categorize transactions');
+      return rejectWithValue(
+        error.message || "Failed to categorize transactions"
+      );
     }
   }
 );
 
 export const bulkCategorizeTransactions = createAsyncThunk(
-  'transactions/bulkCategorizeTransactions',
-  async (data: { transactionIds: string[]; category: string; subcategory?: string }, { rejectWithValue }) => {
+  "transactions/bulkCategorizeTransactions",
+  async (
+    data: { transactionIds: string[]; category: string; subcategory?: string },
+    { rejectWithValue }
+  ) => {
     try {
-      const response = await transactionService.bulkCategorizeTransactions(data);
-      if (response.success && response.data) {
-        return response.data;
-      }
-      return rejectWithValue(response.error || 'Failed to bulk categorize transactions');
+      // TODO: Implement bulk categorization with Firebase
+      return [];
     } catch (error: any) {
-      return rejectWithValue(error.message || 'Failed to bulk categorize transactions');
+      return rejectWithValue(
+        error.message || "Failed to bulk categorize transactions"
+      );
     }
   }
 );
 
 export const searchTransactions = createAsyncThunk(
-  'transactions/searchTransactions',
+  "transactions/searchTransactions",
   async (query: string, { rejectWithValue }) => {
     try {
-      const response = await transactionService.searchTransactions(query);
-      if (response.success && response.data) {
-        return response.data;
-      }
-      return rejectWithValue(response.error || 'Failed to search transactions');
+      // TODO: Implement search with Firebase
+      return [];
     } catch (error: any) {
-      return rejectWithValue(error.message || 'Failed to search transactions');
+      return rejectWithValue(error.message || "Failed to search transactions");
     }
   }
 );
 
 // Transaction slice
 const transactionSlice = createSlice({
-  name: 'transactions',
+  name: "transactions",
   initialState,
   reducers: {
     clearError: (state) => {
@@ -179,16 +210,23 @@ const transactionSlice = createSlice({
       state.pagination.total += 1;
     },
     removeTransaction: (state, action: PayloadAction<string>) => {
-      state.transactions = state.transactions.filter(t => t.id !== action.payload);
+      state.transactions = state.transactions.filter(
+        (t) => t.id !== action.payload
+      );
       state.pagination.total -= 1;
     },
     updateTransactionInList: (state, action: PayloadAction<Transaction>) => {
-      const index = state.transactions.findIndex(t => t.id === action.payload.id);
+      const index = state.transactions.findIndex(
+        (t) => t.id === action.payload.id
+      );
       if (index !== -1) {
         state.transactions[index] = action.payload;
       }
     },
-    setDateRange: (state, action: PayloadAction<{ startDate: string; endDate: string }>) => {
+    setDateRange: (
+      state,
+      action: PayloadAction<{ startDate: string; endDate: string }>
+    ) => {
       state.filters.dateRange = action.payload;
     },
     addCategoryFilter: (state, action: PayloadAction<string>) => {
@@ -197,7 +235,9 @@ const transactionSlice = createSlice({
       }
     },
     removeCategoryFilter: (state, action: PayloadAction<string>) => {
-      state.filters.categories = state.filters.categories.filter(c => c !== action.payload);
+      state.filters.categories = state.filters.categories.filter(
+        (c) => c !== action.payload
+      );
     },
     addAccountFilter: (state, action: PayloadAction<string>) => {
       if (!state.filters.accounts.includes(action.payload)) {
@@ -205,9 +245,14 @@ const transactionSlice = createSlice({
       }
     },
     removeAccountFilter: (state, action: PayloadAction<string>) => {
-      state.filters.accounts = state.filters.accounts.filter(a => a !== action.payload);
+      state.filters.accounts = state.filters.accounts.filter(
+        (a) => a !== action.payload
+      );
     },
-    setAmountRange: (state, action: PayloadAction<{ min: number; max: number }>) => {
+    setAmountRange: (
+      state,
+      action: PayloadAction<{ min: number; max: number }>
+    ) => {
       state.filters.amountRange = action.payload;
     },
     setSearchQuery: (state, action: PayloadAction<string>) => {
@@ -263,7 +308,9 @@ const transactionSlice = createSlice({
       })
       .addCase(updateTransaction.fulfilled, (state, action) => {
         state.loading = false;
-        const index = state.transactions.findIndex(t => t.id === action.payload.id);
+        const index = state.transactions.findIndex(
+          (t) => t.id === action.payload.id
+        );
         if (index !== -1) {
           state.transactions[index] = action.payload;
         }
@@ -282,7 +329,9 @@ const transactionSlice = createSlice({
       })
       .addCase(deleteTransaction.fulfilled, (state, action) => {
         state.loading = false;
-        state.transactions = state.transactions.filter(t => t.id !== action.payload);
+        state.transactions = state.transactions.filter(
+          (t) => t.id !== action.payload
+        );
         state.pagination.total -= 1;
         state.error = null;
       })
@@ -301,7 +350,8 @@ const transactionSlice = createSlice({
         state.loading = false;
         // Add new transactions to the beginning of the list
         const newTransactions = action.payload.filter(
-          newTx => !state.transactions.some(existingTx => existingTx.id === newTx.id)
+          (newTx) =>
+            !state.transactions.some((existingTx) => existingTx.id === newTx.id)
         );
         state.transactions = [...newTransactions, ...state.transactions];
         state.pagination.total += newTransactions.length;
@@ -321,8 +371,10 @@ const transactionSlice = createSlice({
       .addCase(categorizeTransactions.fulfilled, (state, action) => {
         state.loading = false;
         // Update categorized transactions
-        action.payload.forEach(updatedTx => {
-          const index = state.transactions.findIndex(t => t.id === updatedTx.id);
+        action.payload.forEach((updatedTx) => {
+          const index = state.transactions.findIndex(
+            (t) => t.id === updatedTx.id
+          );
           if (index !== -1) {
             state.transactions[index] = updatedTx;
           }
@@ -343,8 +395,10 @@ const transactionSlice = createSlice({
       .addCase(bulkCategorizeTransactions.fulfilled, (state, action) => {
         state.loading = false;
         // Update bulk categorized transactions
-        action.payload.forEach(updatedTx => {
-          const index = state.transactions.findIndex(t => t.id === updatedTx.id);
+        action.payload.forEach((updatedTx) => {
+          const index = state.transactions.findIndex(
+            (t) => t.id === updatedTx.id
+          );
           if (index !== -1) {
             state.transactions[index] = updatedTx;
           }

@@ -37,7 +37,7 @@ const onboardingData: OnboardingSlide[] = [
     title: "Budget Management",
     description:
       "Create custom budgets by category and get real-time alerts when you're approaching your limits.",
-    icon: "pie-chart",
+    icon: "donut-large",
     color: "#FF6B6B",
   },
   {
@@ -45,7 +45,7 @@ const onboardingData: OnboardingSlide[] = [
     title: "Bill Reminders",
     description:
       "Never miss a payment again. Set up automatic reminders for all your recurring bills and subscriptions.",
-    icon: "schedule",
+    icon: "access-time",
     color: "#FFD93D",
   },
   {

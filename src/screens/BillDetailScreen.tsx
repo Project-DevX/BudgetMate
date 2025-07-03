@@ -140,7 +140,7 @@ export function BillDetailScreen() {
       case "overdue":
         return "warning";
       case "upcoming":
-        return "schedule";
+        return "access-time";
       default:
         return "help";
     }
@@ -353,7 +353,7 @@ export function BillDetailScreen() {
             <View style={styles.dueDateInfo}>
               <View style={styles.dueDateRow}>
                 <MaterialIcons
-                  name="schedule"
+                  name="access-time"
                   size={24}
                   color={theme.colors.primary}
                 />
@@ -542,7 +542,7 @@ export function BillDetailScreen() {
                       payment.status === "paid"
                         ? "check-circle"
                         : payment.status === "pending"
-                        ? "schedule"
+                        ? "access-time"
                         : "error"
                     }
                     color={getPaymentStatusColor(payment.status)}

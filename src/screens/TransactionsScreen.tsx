@@ -183,7 +183,7 @@ export function TransactionsScreen() {
           onDismiss={() => setFilterMenuVisible(false)}
           anchor={
             <Appbar.Action
-              icon="filter-list"
+              icon="filter-alt"
               onPress={() => setFilterMenuVisible(true)}
             />
           }
@@ -215,7 +215,7 @@ export function TransactionsScreen() {
           onValueChange={(value) => setViewMode(value as "list" | "summary")}
           buttons={[
             { value: "list", label: "List", icon: "format-list-bulleted" },
-            { value: "summary", label: "Summary", icon: "pie-chart" },
+            { value: "summary", label: "Summary", icon: "donut-large" },
           ]}
         />
       </View>

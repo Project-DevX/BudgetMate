@@ -315,7 +315,7 @@ export function ProfileScreen() {
 
               <View style={styles.statItem}>
                 <MaterialIcons
-                  name="schedule"
+                  name="access-time"
                   size={24}
                   color={theme.colors.primary}
                 />

@@ -118,7 +118,13 @@ export function DashboardScreen() {
             </Button>
             <Button
               mode="outlined"
-              icon="pie-chart"
+              icon={() => (
+                <MaterialIcons
+                  name="pie-chart"
+                  size={18}
+                  color={theme.colors.primary}
+                />
+              )}
               onPress={() => navigation.navigate("AddBudget" as never)}
               style={styles.actionButton}
             >
@@ -126,7 +132,13 @@ export function DashboardScreen() {
             </Button>
             <Button
               mode="outlined"
-              icon="schedule"
+              icon={() => (
+                <MaterialIcons
+                  name="schedule"
+                  size={18}
+                  color={theme.colors.primary}
+                />
+              )}
               onPress={() => navigation.navigate("AddBill" as never)}
               style={styles.actionButton}
             >

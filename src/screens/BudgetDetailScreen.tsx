@@ -390,7 +390,7 @@ export function BudgetDetailScreen() {
             <View style={styles.statsGrid}>
               <Surface style={styles.statItem} elevation={1}>
                 <MaterialIcons
-                  name="schedule"
+                  name="access-time"
                   size={24}
                   color={theme.colors.primary}
                 />

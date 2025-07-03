@@ -420,7 +420,7 @@ export function AddBillScreen() {
             disabled={loading}
             style={styles.submitButton}
             contentStyle={styles.submitButtonContent}
-            icon="schedule"
+            icon="access-time"
           >
             Add Bill
           </Button>

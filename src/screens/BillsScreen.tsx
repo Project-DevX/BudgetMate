@@ -411,7 +411,7 @@ export function BillsScreen() {
                         </Button>
                         {!bill.isAutoPay && (
                           <IconButton
-                            icon="schedule"
+                            icon="access-time"
                             mode="outlined"
                             size={20}
                             onPress={() =>
@@ -474,7 +474,7 @@ export function BillsScreen() {
 
               <Button
                 mode="outlined"
-                icon="schedule"
+                icon="access-time"
                 onPress={() => console.log("Set up reminders")}
                 style={styles.actionButton}
               >
