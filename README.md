@@ -1,5 +1,7 @@
 # BudgetMate - Smart Budgeting App
 
+🚀 **Live Demo**: [https://budgetmate-pbki0qyg1-darshanas-projects-48d8e09a.vercel.app](https://budgetmate-pbki0qyg1-darshanas-projects-48d8e09a.vercel.app)
+
 BudgetMate is a comprehensive React Native budgeting application built with Expo that helps users manage their finances intelligently through automated expense tracking, AI-powered categorization, and smart budgeting suggestions.
 
 ## 🚀 Features
