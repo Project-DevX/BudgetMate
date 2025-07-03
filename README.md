@@ -7,6 +7,7 @@ BudgetMate is a comprehensive React Native budgeting application built with Expo
 ## 🚀 Features
 
 ### MVP Features
+
 - **Expense Tracking**: Auto-import via bank APIs (Plaid) or statement upload
 - **Smart Categorization**: Rule-based categorization with user overrides and ML suggestions
 - **Budget Management**: Create budgets by category with spending alerts
@@ -17,6 +18,7 @@ BudgetMate is a comprehensive React Native budgeting application built with Expo
 - **Dashboard**: Comprehensive overview of financial health
 
 ### Future Features (Long-term Vision)
+
 - **ML-based Predictions**: Expense prediction and smart budgeting suggestions
 - **AI-powered Automation**: Auto-pay setup and subscription management
 - **Enhanced ML Categorization**: Personalized per-user categorization
@@ -29,6 +31,7 @@ BudgetMate is a comprehensive React Native budgeting application built with Expo
 ## 🏗️ Architecture
 
 ### Frontend (React Native with Expo)
+
 - **Framework**: React Native with Expo for cross-platform development
 - **Navigation**: React Navigation for screen management
 - **State Management**: Redux Toolkit for application state
@@ -37,6 +40,7 @@ BudgetMate is a comprehensive React Native budgeting application built with Expo
 - **Storage**: AsyncStorage for local data persistence
 
 ### Backend (Microservices Architecture)
+
 - **API Gateway**: Centralized entry point for all requests
 - **Microservices**: Modular backend services (Node.js/Express or Python Django/FastAPI)
 - **Database**: PostgreSQL for structured data, MongoDB for flexible document storage
@@ -44,6 +48,7 @@ BudgetMate is a comprehensive React Native budgeting application built with Expo
 - **Cloud Infrastructure**: AWS, GCP, or Azure for scalability
 
 ### Key Integrations
+
 - **Google Gemini API**: Document parsing and AI insights
 - **Plaid/TrueLayer**: Open banking APIs for transaction import
 - **ML Frameworks**: TensorFlow, scikit-learn for predictions and categorization
@@ -53,12 +58,14 @@ BudgetMate is a comprehensive React Native budgeting application built with Expo
 ## 📱 Screens & Navigation
 
 ### Authentication Flow
+
 - Onboarding Screen
 - Login Screen
 - Register Screen
 - Forgot/Reset Password Screens
 
 ### Main Application
+
 - **Dashboard**: Financial overview and quick actions
 - **Transactions**: Transaction list and management
 - **Budgets**: Budget creation and monitoring
@@ -68,6 +75,7 @@ BudgetMate is a comprehensive React Native budgeting application built with Expo
 - **Profile**: User profile management
 
 ### Additional Features
+
 - **Statement Upload**: PDF/image upload and processing
 - **AI Insights**: Smart suggestions and spending analysis
 - **Category Management**: Custom category creation and rules
@@ -75,6 +83,7 @@ BudgetMate is a comprehensive React Native budgeting application built with Expo
 ## 🛠️ Technology Stack
 
 ### Frontend Dependencies
+
 ```json
 {
   "@react-navigation/native": "Navigation library",
@@ -95,6 +104,7 @@ BudgetMate is a comprehensive React Native budgeting application built with Expo
 ```
 
 ### Key Services
+
 ```typescript
 // Core Services
 - apiService: HTTP client with token refresh
@@ -116,6 +126,7 @@ BudgetMate is a comprehensive React Native budgeting application built with Expo
 ## 🚀 Getting Started
 
 ### Prerequisites
+
 - Node.js (v16 or higher)
 - npm or yarn
 - Expo CLI
@@ -124,23 +135,27 @@ BudgetMate is a comprehensive React Native budgeting application built with Expo
 ### Installation
 
 1. **Clone the repository**
+
    ```bash
    git clone https://github.com/yourusername/budgetmate.git
    cd BudgetMate
    ```
 
 2. **Install dependencies**
+
    ```bash
    npm install
    ```
 
 3. **Set up environment variables**
+
    ```bash
    cp .env.example .env
    # Edit .env with your API keys and configuration
    ```
 
 4. **Start the development server**
+
    ```bash
    npx expo start
    ```
@@ -166,6 +181,7 @@ EXPO_PUBLIC_OPENAI_API_KEY=your_openai_api_key
 ## 📊 Data Models
 
 ### Core Entities
+
 - **User**: User profiles and preferences
 - **Account**: Bank accounts and balances
 - **Transaction**: Financial transactions with categorization
@@ -175,6 +191,7 @@ EXPO_PUBLIC_OPENAI_API_KEY=your_openai_api_key
 - **AIInsight**: ML-generated insights and suggestions
 
 ### Key Features
+
 - **Real-time Sync**: Automatic data synchronization
 - **Offline Support**: Works offline with local storage
 - **Smart Categorization**: ML-powered expense categorization
@@ -205,12 +222,14 @@ npm run test:e2e
 ## 📦 Build & Deployment
 
 ### Development Build
+
 ```bash
 npx expo build:android
 npx expo build:ios
 ```
 
 ### Production Build
+
 ```bash
 # EAS Build (recommended)
 npx eas build --platform android
@@ -218,6 +237,7 @@ npx eas build --platform ios
 ```
 
 ### App Store Deployment
+
 ```bash
 npx eas submit --platform ios
 npx eas submit --platform android
