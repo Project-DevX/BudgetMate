@@ -2,7 +2,15 @@
 
 ## Overview
 
-This guide walks you through implementing Google Sign-In with Firebase authentication in your React Native Expo app.
+This guide walks you through implementing Google Sign-In with Firebase authentication in your React Native Expo app using Expo AuthSession (compatible with Expo managed workflow).
+
+## 🔧 Important: Redirect URI Configuration
+
+**Before proceeding with Firebase setup, you must configure redirect URIs in Google Cloud Console.**
+
+👉 **See [GOOGLE_SIGNIN_REDIRECT_URIS.md](./GOOGLE_SIGNIN_REDIRECT_URIS.md) for detailed redirect URI setup instructions.**
+
+The redirect URI configuration is critical for Google Sign-In to work in both development and production environments.
 
 ## 🔥 Firebase Console Setup
 

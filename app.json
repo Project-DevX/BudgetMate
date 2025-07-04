@@ -28,6 +28,11 @@
     "web": {
       "favicon": "./assets/favicon.png",
       "bundler": "metro"
+    },
+    "extra": {
+      "eas": {
+        "projectId": "a59102f1-f9d5-4fe7-a458-f0864544d375"
+      }
     }
   }
 }

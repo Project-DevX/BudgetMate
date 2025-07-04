@@ -1,5 +1,6 @@
 import * as AuthSession from 'expo-auth-session';
 import * as WebBrowser from 'expo-web-browser';
+import Constants from 'expo-constants';
 import { GoogleAuthProvider, signInWithCredential } from 'firebase/auth';
 import { doc, setDoc, getDoc } from 'firebase/firestore';
 import { auth, db } from '../config/firebase';
@@ -9,6 +10,19 @@ import { User, ApiResponse } from '../types';
 WebBrowser.maybeCompleteAuthSession();
 
 export class GoogleAuthService {
+  // Get the appropriate redirect URI based on environment
+  private getRedirectUri(): string {
+    if (__DEV__) {
+      // For development: Use Expo's proxy redirect URI
+      // This works consistently regardless of dev server IP/port changes
+      return AuthSession.makeRedirectUri();
+    } else {
+      // For production: Use custom scheme
+      return AuthSession.makeRedirectUri({
+        scheme: 'budgetmate',
+      });
+    }
+  }
   // Convert Firebase user to our User type
   private async convertFirebaseUser(firebaseUser: any): Promise<User> {
     const userDoc = await getDoc(doc(db, "users", firebaseUser.uid));
@@ -48,11 +62,10 @@ export class GoogleAuthService {
         throw new Error('Google Web Client ID not configured. Please add EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID to your environment variables.');
       }
 
-      // Create the redirect URI
-      const redirectUri = AuthSession.makeRedirectUri({
-        scheme: 'budgetmate',
-      });
+      // Get the appropriate redirect URI for current environment
+      const redirectUri = this.getRedirectUri();
 
+      console.log('Environment:', __DEV__ ? 'Development' : 'Production');
       console.log('Redirect URI:', redirectUri);
 
       // Create the auth URL manually to avoid PKCE issues
