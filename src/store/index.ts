@@ -9,6 +9,7 @@ import accountSlice from './slices/accountSlice';
 import dashboardSlice from './slices/dashboardSlice';
 import aiSlice from './slices/aiSlice';
 import uiSlice from './slices/uiSlice';
+import themeSlice from './slices/themeSlice';
 import { RootState } from '../types';
 
 export const store = configureStore({
@@ -22,6 +23,7 @@ export const store = configureStore({
     dashboard: dashboardSlice,
     ai: aiSlice,
     ui: uiSlice,
+    theme: themeSlice,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({

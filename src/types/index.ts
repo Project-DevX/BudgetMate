@@ -253,6 +253,7 @@ export interface RootState {
   dashboard: DashboardState;
   ai: AIState;
   ui: UIState;
+  theme: ThemeState;
 }
 
 export interface AuthState {
@@ -352,4 +353,9 @@ export interface UIState {
   loading: boolean;
   alerts: Alert[];
   currentScreen: string;
+}
+
+export interface ThemeState {
+  mode: 'light' | 'dark' | 'system';
+  isDark: boolean;
 }

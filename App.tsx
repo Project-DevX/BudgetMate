@@ -19,8 +19,9 @@ import {
 } from "./src/store/slices/authSlice";
 import { LoadingScreen } from "./src/screens/LoadingScreen";
 import { THEME_COLORS } from "./src/constants";
-import { paperTheme } from "./src/utils/theme";
+import { lightTheme, darkTheme } from "./src/utils/theme";
 import { firebaseAuthService } from "./src/services/firebaseAuthService";
+import { useAppTheme } from "./src/hooks/useAppTheme";
 
 // Navigation persistence configuration
 const PERSISTENCE_KEY = "NAVIGATION_STATE_V1";
@@ -70,7 +71,8 @@ const linking = {
 function AppContent() {
   const dispatch = useAppDispatch();
   const { isAuthenticated, loading } = useAppSelector((state) => state.auth);
-  const { theme } = useAppSelector((state) => state.ui);
+  const { isDark } = useAppSelector((state) => state.theme);
+  const currentTheme = isDark ? darkTheme : lightTheme;
 
   // Navigation state persistence
   const [isReady, setIsReady] = React.useState(false);
@@ -189,14 +191,14 @@ function AppContent() {
       }}
       linking={linking}
       theme={{
-        dark: theme === "dark",
+        dark: isDark,
         colors: {
-          primary: THEME_COLORS[theme].primary,
-          background: THEME_COLORS[theme].background,
-          card: THEME_COLORS[theme].surface,
-          text: THEME_COLORS[theme].text,
-          border: THEME_COLORS[theme].border,
-          notification: THEME_COLORS[theme].accent,
+          primary: currentTheme.colors.primary,
+          background: currentTheme.colors.background,
+          card: currentTheme.colors.surface,
+          text: currentTheme.colors.onSurface,
+          border: currentTheme.colors.outline,
+          notification: currentTheme.colors.primary,
         },
         fonts: {
           regular: {
@@ -228,24 +230,33 @@ export default function App() {
     <GestureHandlerRootView style={{ flex: 1 }}>
       <SafeAreaProvider>
         <Provider store={store}>
-          <PaperProvider theme={paperTheme}>
-            <StatusBar style="auto" />
-            <ScrollView
-              style={{ flex: 1 }}
-              contentContainerStyle={{ flexGrow: 1 }}
-              showsVerticalScrollIndicator={true} // Show vertical scroll bar
-              showsHorizontalScrollIndicator={false} // Hide horizontal scroll bar
-              persistentScrollbar={true} // Always show on Android
-              horizontal={false} // Prevent horizontal scrolling
-              scrollEventThrottle={16}
-              bounces={false}
-              overScrollMode="never"
-            >
-              <AppContent />
-            </ScrollView>
-          </PaperProvider>
+          <ThemedApp />
         </Provider>
       </SafeAreaProvider>
     </GestureHandlerRootView>
+  );
+}
+
+function ThemedApp() {
+  const { isDark } = useAppSelector((state) => state.theme);
+  const currentTheme = isDark ? darkTheme : lightTheme;
+
+  return (
+    <PaperProvider theme={currentTheme}>
+      <StatusBar style="auto" />
+      <ScrollView
+        style={{ flex: 1 }}
+        contentContainerStyle={{ flexGrow: 1 }}
+        showsVerticalScrollIndicator={true} // Show vertical scroll bar
+        showsHorizontalScrollIndicator={false} // Hide horizontal scroll bar
+        persistentScrollbar={true} // Always show on Android
+        horizontal={false} // Prevent horizontal scrolling
+        scrollEventThrottle={16}
+        bounces={false}
+        overScrollMode="never"
+      >
+        <AppContent />
+      </ScrollView>
+    </PaperProvider>
   );
 }

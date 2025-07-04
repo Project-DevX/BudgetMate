@@ -1,11 +1,12 @@
 import React, { useState } from "react";
 import { View, StyleSheet, Alert } from "react-native";
-import { Text, TextInput, Button, useTheme, Divider } from "react-native-paper";
+import { Text, TextInput, Button, useTheme, Divider, Appbar } from "react-native-paper";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { MaterialIcons } from "@expo/vector-icons";
 
 import { useAppDispatch, useAppSelector } from "../store";
 import { loginUser, signInWithGoogle } from "../store/slices/authSlice";
+import { ThemeToggle } from "../components/ThemeToggle";
 
 export function LoginScreen({ navigation }: any) {
   const theme = useTheme();
