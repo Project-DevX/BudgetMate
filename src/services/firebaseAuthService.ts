@@ -10,8 +10,6 @@ import {
   reauthenticateWithCredential,
   onAuthStateChanged,
   User as FirebaseUser,
-  GoogleAuthProvider,
-  signInWithCredential,
 } from "firebase/auth";
 import {
   doc,
@@ -20,10 +18,9 @@ import {
   updateDoc,
   Timestamp,
 } from "firebase/firestore";
-import * as AuthSession from 'expo-auth-session';
-import * as WebBrowser from 'expo-web-browser';
 import { auth, db } from "../config/firebase";
 import { User, ApiResponse } from "../types";
+import { googleAuthService } from "./googleAuthService";
 
 export class FirebaseAuthService {
   // Listen to auth state changes
@@ -157,103 +154,23 @@ export class FirebaseAuthService {
     }
   }
 
-  // Initialize WebBrowser for AuthSession
-  private initializeWebBrowser() {
-    WebBrowser.maybeCompleteAuthSession();
-  }
-
-  // Google Sign-In using Expo AuthSession
+  // Google Sign-In using dedicated Google Auth Service
   async signInWithGoogle(): Promise<
     ApiResponse<{ user: User; token: string; refreshToken: string }>
   > {
     try {
-      this.initializeWebBrowser();
-
-      const clientId = process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID;
-      if (!clientId) {
-        throw new Error('Google Web Client ID not configured. Please add EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID to your environment variables.');
-      }
-
-      // Configure the auth request
-      const request = new AuthSession.AuthRequest({
-        clientId,
-        scopes: ['openid', 'profile', 'email'],
-        responseType: AuthSession.ResponseType.IdToken,
-        redirectUri: AuthSession.makeRedirectUri({
-          scheme: 'budgetmate', // Replace with your app scheme
-          useProxy: true,
-        }),
-      });
-
-      // Initiate the auth flow
-      const result = await request.promptAsync({
-        authorizationEndpoint: 'https://accounts.google.com/o/oauth2/v2/auth',
-      });
-
-      if (result.type === 'success' && result.params.id_token) {
-        // Create a Google credential with the ID token
-        const googleCredential = GoogleAuthProvider.credential(result.params.id_token);
-
-        // Sign in with Firebase using the Google credential
-        const userCredential = await signInWithCredential(auth, googleCredential);
-
-        // Check if this is a new user and create user document if needed
-        const userDocRef = doc(db, "users", userCredential.user.uid);
-        const userDoc = await getDoc(userDocRef);
-
-        if (!userDoc.exists()) {
-          // Create user document for new Google users
-          const newUserDoc = {
-            name: userCredential.user.displayName || userCredential.user.email?.split('@')[0] || '',
-            email: userCredential.user.email || '',
-            avatar: userCredential.user.photoURL,
-            preferences: {
-              currency: "USD",
-              budgetCycle: "monthly",
-              notifications: {
-                billReminders: true,
-                budgetAlerts: true,
-                expenseAlerts: true,
-                subscriptionAlerts: true,
-              },
-              categories: {
-                customCategories: [],
-                categoryRules: [],
-              },
-            },
-            createdAt: new Date().toISOString(),
-            updatedAt: new Date().toISOString(),
-          };
-
-          await setDoc(userDocRef, newUserDoc);
-        }
-
-        const user = await this.convertFirebaseUser(userCredential.user);
-        const token = await userCredential.user.getIdToken();
-        const refreshToken = userCredential.user.refreshToken;
-
-        return {
-          success: true,
-          data: { user, token, refreshToken },
-        };
-      } else if (result.type === 'cancel') {
-        return {
-          success: false,
-          error: 'Google Sign-In was cancelled by the user',
-        };
-      } else {
-        throw new Error('Google Sign-In failed');
-      }
+      // Delegate to the specialized Google Auth Service
+      return await googleAuthService.signInWithGoogle();
     } catch (error: any) {
       console.error('Google Sign-In error:', error);
       return {
         success: false,
-        error: this.handleGoogleSignInError(error),
+        error: error.message || 'Google Sign-In failed',
       };
     }
   }
 
-  // Enhanced logout - no need for Google-specific sign-out with AuthSession
+  // Enhanced logout
   async logout(): Promise<ApiResponse<void>> {
     try {
       await signOut(auth);
