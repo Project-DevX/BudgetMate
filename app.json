@@ -10,9 +10,20 @@
     "scheme": "budgetmate",
     "owner": "himeth777",
     "description": "A comprehensive budget management app with AI insights and expense tracking",
-    "keywords": ["budget", "finance", "expense", "tracker", "money", "management"],
+    "keywords": [
+      "budget",
+      "finance",
+      "expense",
+      "tracker",
+      "money",
+      "management"
+    ],
     "privacy": "public",
-    "platforms": ["ios", "android", "web"],
+    "platforms": [
+      "ios",
+      "android",
+      "web"
+    ],
     "splash": {
       "image": "./assets/splash-icon.png",
       "resizeMode": "contain",
@@ -38,6 +49,12 @@
       "eas": {
         "projectId": "a59102f1-f9d5-4fe7-a458-f0864544d375"
       }
+    },
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
+    "updates": {
+      "url": "https://u.expo.dev/a59102f1-f9d5-4fe7-a458-f0864544d375"
     }
   }
 }
