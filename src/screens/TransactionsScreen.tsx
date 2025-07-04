@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { View, StyleSheet, ScrollView, RefreshControl } from "react-native";
+import { View, StyleSheet, ScrollView } from "react-native";
 import {
   Text,
   Card,
@@ -266,14 +266,7 @@ export function TransactionsScreen() {
 
       {viewMode === "summary" ? (
         /* Summary View */
-        <ScrollView
-          style={styles.content}
-          contentContainerStyle={styles.scrollContent}
-          showsVerticalScrollIndicator={false}
-          refreshControl={
-            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-          }
-        >
+        <View style={styles.content}>
           <View style={styles.summaryContainer}>
             <Card style={styles.summaryCard}>
               <Card.Content>
@@ -347,17 +340,10 @@ export function TransactionsScreen() {
               </Card.Content>
             </Card>
           </View>
-        </ScrollView>
+        </View>
       ) : (
         /* List View */
-        <ScrollView
-          style={styles.content}
-          contentContainerStyle={styles.scrollContent}
-          showsVerticalScrollIndicator={false}
-          refreshControl={
-            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-          }
-        >
+        <View style={styles.content}>
           {Object.keys(groupedTransactions).length > 0 ? (
             Object.entries(groupedTransactions)
               .sort(([a], [b]) => new Date(b).getTime() - new Date(a).getTime())
@@ -474,7 +460,7 @@ export function TransactionsScreen() {
               </Card.Content>
             </Card>
           )}
-        </ScrollView>
+        </View>
       )}
 
       <FAB
@@ -514,8 +500,6 @@ const styles = StyleSheet.create({
   },
   content: {
     flex: 1,
-  },
-  scrollContent: {
     padding: 16,
     paddingBottom: 100, // Extra padding to ensure FAB doesn't cover content
   },

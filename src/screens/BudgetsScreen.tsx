@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { View, StyleSheet, ScrollView, RefreshControl } from "react-native";
+import { View, StyleSheet } from "react-native";
 import {
   Text,
   Card,
@@ -168,14 +168,7 @@ export function BudgetsScreen() {
         </View>
       </View>
 
-      <ScrollView
-        style={styles.content}
-        contentContainerStyle={styles.scrollContent}
-        showsVerticalScrollIndicator={false}
-        refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-        }
-      >
+      <View style={styles.content}>
         {/* Budget Overview */}
         <Card style={styles.overviewCard}>
           <Card.Content>
@@ -412,7 +405,7 @@ export function BudgetsScreen() {
             </View>
           </Card.Content>
         </Card>
-      </ScrollView>
+      </View>
 
       <FAB
         icon="plus"
@@ -440,8 +433,6 @@ const styles = StyleSheet.create({
   },
   content: {
     flex: 1,
-  },
-  scrollContent: {
     padding: 16,
     paddingBottom: 100, // Extra padding to ensure FAB doesn't cover content
   },

@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { View, StyleSheet, ScrollView, Alert } from "react-native";
+import { View, StyleSheet, Alert } from "react-native";
 import {
   Text,
   TextInput,
@@ -215,217 +215,197 @@ export function AddTransactionScreen({ navigation }: any) {
     <SafeAreaView
       style={[styles.container, { backgroundColor: theme.colors.background }]}
     >
-      <ScrollView
-        contentContainerStyle={styles.scrollContent}
-        showsVerticalScrollIndicator={false}
-        keyboardShouldPersistTaps="handled"
-      >
-        <View style={styles.content}>
-          <Text
-            variant="headlineMedium"
-            style={[styles.title, { color: theme.colors.primary }]}
-          >
-            Add Transaction
-          </Text>
+      <View style={styles.content}>
+        <Text
+          variant="headlineMedium"
+          style={[styles.title, { color: theme.colors.primary }]}
+        >
+          Add Transaction
+        </Text>
 
-          {/* Transaction Type */}
-          <Card
-            style={[styles.card, { backgroundColor: theme.colors.surface }]}
-          >
-            <Card.Content>
-              <Text variant="titleMedium" style={styles.sectionTitle}>
-                Transaction Type
-              </Text>
-              <SegmentedButtons
-                value={formData.type}
-                onValueChange={(value) => updateFormData("type", value)}
-                buttons={[
-                  {
-                    value: "expense",
-                    label: "Expense",
-                    icon: "minus-circle",
-                  },
-                  {
-                    value: "income",
-                    label: "Income",
-                    icon: "plus-circle",
-                  },
-                ]}
-                style={styles.segmentedButtons}
+        {/* Transaction Type */}
+        <Card style={[styles.card, { backgroundColor: theme.colors.surface }]}>
+          <Card.Content>
+            <Text variant="titleMedium" style={styles.sectionTitle}>
+              Transaction Type
+            </Text>
+            <SegmentedButtons
+              value={formData.type}
+              onValueChange={(value) => updateFormData("type", value)}
+              buttons={[
+                {
+                  value: "expense",
+                  label: "Expense",
+                  icon: "minus-circle",
+                },
+                {
+                  value: "income",
+                  label: "Income",
+                  icon: "plus-circle",
+                },
+              ]}
+              style={styles.segmentedButtons}
+            />
+          </Card.Content>
+        </Card>
+
+        {/* Amount */}
+        <Card style={[styles.card, { backgroundColor: theme.colors.surface }]}>
+          <Card.Content>
+            <Text variant="titleMedium" style={styles.sectionTitle}>
+              Amount
+            </Text>
+
+            {/* Quick Amount Buttons */}
+            <View style={styles.quickAmountContainer}>
+              {QUICK_AMOUNTS.map((amount) => (
+                <Chip
+                  key={amount}
+                  mode={
+                    formData.amount === amount.toString() ? "flat" : "outlined"
+                  }
+                  onPress={() => setQuickAmount(amount)}
+                  style={styles.quickAmountChip}
+                >
+                  ${amount}
+                </Chip>
+              ))}
+            </View>
+
+            <TextInput
+              label="Amount"
+              value={formData.amount}
+              onChangeText={(value) => updateFormData("amount", value)}
+              mode="outlined"
+              keyboardType="decimal-pad"
+              left={<TextInput.Icon icon="currency-usd" />}
+              error={!!errors.amount}
+              style={styles.input}
+            />
+            <HelperText type="error" visible={!!errors.amount}>
+              {errors.amount}
+            </HelperText>
+          </Card.Content>
+        </Card>
+
+        {/* Description & Merchant */}
+        <Card style={[styles.card, { backgroundColor: theme.colors.surface }]}>
+          <Card.Content>
+            <Text variant="titleMedium" style={styles.sectionTitle}>
+              Details
+            </Text>
+
+            <TextInput
+              label="Description *"
+              value={formData.description}
+              onChangeText={(value) => updateFormData("description", value)}
+              mode="outlined"
+              error={!!errors.description}
+              style={styles.input}
+            />
+            <HelperText type="error" visible={!!errors.description}>
+              {errors.description}
+            </HelperText>
+
+            <TextInput
+              label="Merchant (Optional)"
+              value={formData.merchant}
+              onChangeText={(value) => updateFormData("merchant", value)}
+              mode="outlined"
+              style={styles.input}
+            />
+
+            <TextInput
+              label="Date"
+              value={formData.date}
+              onChangeText={(value) => updateFormData("date", value)}
+              mode="outlined"
+              left={<TextInput.Icon icon="calendar" />}
+              style={styles.input}
+            />
+          </Card.Content>
+        </Card>
+
+        {/* Category */}
+        <Card style={[styles.card, { backgroundColor: theme.colors.surface }]}>
+          <Card.Content>
+            <Text variant="titleMedium" style={styles.sectionTitle}>
+              Category *
+            </Text>
+
+            <View style={styles.categoryContainer}>
+              {categories.map((category) => (
+                <Chip
+                  key={category.id}
+                  mode={formData.category === category.id ? "flat" : "outlined"}
+                  onPress={() => updateFormData("category", category.id)}
+                  icon={category.icon}
+                  style={styles.categoryChip}
+                >
+                  {category.label}
+                </Chip>
+              ))}
+            </View>
+
+            <HelperText type="error" visible={!!errors.category}>
+              {errors.category}
+            </HelperText>
+          </Card.Content>
+        </Card>
+
+        {/* Tags */}
+        <Card style={[styles.card, { backgroundColor: theme.colors.surface }]}>
+          <Card.Content>
+            <Text variant="titleMedium" style={styles.sectionTitle}>
+              Tags (Optional)
+            </Text>
+
+            <View style={styles.tagInputContainer}>
+              <TextInput
+                label="Add Tag"
+                value={newTag}
+                onChangeText={setNewTag}
+                mode="outlined"
+                style={[styles.input, styles.tagInput]}
+                onSubmitEditing={addTag}
               />
-            </Card.Content>
-          </Card>
+              <IconButton
+                icon="plus"
+                mode="contained"
+                onPress={addTag}
+                disabled={!newTag.trim()}
+              />
+            </View>
 
-          {/* Amount */}
-          <Card
-            style={[styles.card, { backgroundColor: theme.colors.surface }]}
-          >
-            <Card.Content>
-              <Text variant="titleMedium" style={styles.sectionTitle}>
-                Amount
-              </Text>
-
-              {/* Quick Amount Buttons */}
-              <View style={styles.quickAmountContainer}>
-                {QUICK_AMOUNTS.map((amount) => (
+            {formData.tags.length > 0 && (
+              <View style={styles.tagsContainer}>
+                {formData.tags.map((tag, index) => (
                   <Chip
-                    key={amount}
-                    mode={
-                      formData.amount === amount.toString()
-                        ? "flat"
-                        : "outlined"
-                    }
-                    onPress={() => setQuickAmount(amount)}
-                    style={styles.quickAmountChip}
+                    key={index}
+                    onClose={() => removeTag(tag)}
+                    style={styles.tag}
                   >
-                    ${amount}
+                    {tag}
                   </Chip>
                 ))}
               </View>
+            )}
+          </Card.Content>
+        </Card>
 
-              <TextInput
-                label="Amount"
-                value={formData.amount}
-                onChangeText={(value) => updateFormData("amount", value)}
-                mode="outlined"
-                keyboardType="decimal-pad"
-                left={<TextInput.Icon icon="currency-usd" />}
-                error={!!errors.amount}
-                style={styles.input}
-              />
-              <HelperText type="error" visible={!!errors.amount}>
-                {errors.amount}
-              </HelperText>
-            </Card.Content>
-          </Card>
-
-          {/* Description & Merchant */}
-          <Card
-            style={[styles.card, { backgroundColor: theme.colors.surface }]}
-          >
-            <Card.Content>
-              <Text variant="titleMedium" style={styles.sectionTitle}>
-                Details
-              </Text>
-
-              <TextInput
-                label="Description *"
-                value={formData.description}
-                onChangeText={(value) => updateFormData("description", value)}
-                mode="outlined"
-                error={!!errors.description}
-                style={styles.input}
-              />
-              <HelperText type="error" visible={!!errors.description}>
-                {errors.description}
-              </HelperText>
-
-              <TextInput
-                label="Merchant (Optional)"
-                value={formData.merchant}
-                onChangeText={(value) => updateFormData("merchant", value)}
-                mode="outlined"
-                style={styles.input}
-              />
-
-              <TextInput
-                label="Date"
-                value={formData.date}
-                onChangeText={(value) => updateFormData("date", value)}
-                mode="outlined"
-                left={<TextInput.Icon icon="calendar" />}
-                style={styles.input}
-              />
-            </Card.Content>
-          </Card>
-
-          {/* Category */}
-          <Card
-            style={[styles.card, { backgroundColor: theme.colors.surface }]}
-          >
-            <Card.Content>
-              <Text variant="titleMedium" style={styles.sectionTitle}>
-                Category *
-              </Text>
-
-              <View style={styles.categoryContainer}>
-                {categories.map((category) => (
-                  <Chip
-                    key={category.id}
-                    mode={
-                      formData.category === category.id ? "flat" : "outlined"
-                    }
-                    onPress={() => updateFormData("category", category.id)}
-                    icon={category.icon}
-                    style={styles.categoryChip}
-                  >
-                    {category.label}
-                  </Chip>
-                ))}
-              </View>
-
-              <HelperText type="error" visible={!!errors.category}>
-                {errors.category}
-              </HelperText>
-            </Card.Content>
-          </Card>
-
-          {/* Tags */}
-          <Card
-            style={[styles.card, { backgroundColor: theme.colors.surface }]}
-          >
-            <Card.Content>
-              <Text variant="titleMedium" style={styles.sectionTitle}>
-                Tags (Optional)
-              </Text>
-
-              <View style={styles.tagInputContainer}>
-                <TextInput
-                  label="Add Tag"
-                  value={newTag}
-                  onChangeText={setNewTag}
-                  mode="outlined"
-                  style={[styles.input, styles.tagInput]}
-                  onSubmitEditing={addTag}
-                />
-                <IconButton
-                  icon="plus"
-                  mode="contained"
-                  onPress={addTag}
-                  disabled={!newTag.trim()}
-                />
-              </View>
-
-              {formData.tags.length > 0 && (
-                <View style={styles.tagsContainer}>
-                  {formData.tags.map((tag, index) => (
-                    <Chip
-                      key={index}
-                      onClose={() => removeTag(tag)}
-                      style={styles.tag}
-                    >
-                      {tag}
-                    </Chip>
-                  ))}
-                </View>
-              )}
-            </Card.Content>
-          </Card>
-
-          {/* Submit Button */}
-          <Button
-            mode="contained"
-            onPress={handleSubmit}
-            loading={loading}
-            disabled={loading}
-            style={styles.submitButton}
-            contentStyle={styles.submitButtonContent}
-            icon={formData.type === "expense" ? "minus-circle" : "plus-circle"}
-          >
-            Add {formData.type === "expense" ? "Expense" : "Income"}
-          </Button>
-        </View>
-      </ScrollView>
+        {/* Submit Button */}
+        <Button
+          mode="contained"
+          onPress={handleSubmit}
+          loading={loading}
+          disabled={loading}
+          style={styles.submitButton}
+          contentStyle={styles.submitButtonContent}
+          icon={formData.type === "expense" ? "minus-circle" : "plus-circle"}
+        >
+          Add {formData.type === "expense" ? "Expense" : "Income"}
+        </Button>
+      </View>
     </SafeAreaView>
   );
 }

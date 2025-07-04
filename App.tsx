@@ -5,7 +5,7 @@ import { NavigationContainer, NavigationState } from "@react-navigation/native";
 import { PaperProvider } from "react-native-paper";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { SafeAreaProvider } from "react-native-safe-area-context";
-import { Platform, BackHandler } from "react-native";
+import { Platform, BackHandler, ScrollView } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
 import { store } from "./src/store";
@@ -230,7 +230,19 @@ export default function App() {
         <Provider store={store}>
           <PaperProvider theme={paperTheme}>
             <StatusBar style="auto" />
-            <AppContent />
+            <ScrollView
+              style={{ flex: 1 }}
+              contentContainerStyle={{ flexGrow: 1 }}
+              showsVerticalScrollIndicator={true} // Show vertical scroll bar
+              showsHorizontalScrollIndicator={false} // Hide horizontal scroll bar
+              persistentScrollbar={true} // Always show on Android
+              horizontal={false} // Prevent horizontal scrolling
+              scrollEventThrottle={16}
+              bounces={false}
+              overScrollMode="never"
+            >
+              <AppContent />
+            </ScrollView>
           </PaperProvider>
         </Provider>
       </SafeAreaProvider>
