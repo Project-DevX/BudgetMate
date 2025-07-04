@@ -10,7 +10,18 @@
     "build": "expo export --platform web",
     "build:web": "expo export --platform web --output-dir dist",
     "build:vercel": "expo export --platform web --output-dir dist",
-    "build:netlify": "npm run build:web && copy public\\_redirects dist\\_redirects"
+    "build:netlify": "npm run build:web && copy public\\_redirects dist\\_redirects",
+    "publish": "expo publish",
+    "publish:web": "expo publish --platform web",
+    "update": "npx eas update --auto",
+    "update:message": "npx eas update",
+    "update:ios": "npx eas update --platform ios",
+    "update:android": "npx eas update --platform android",
+    "update:script": "./scripts/eas-update.sh",
+    "deploy": "./scripts/deploy.sh",
+    "deploy:netlify": "npm run build:web && echo 'Upload dist folder to Netlify'",
+    "deploy:vercel": "vercel --prod",
+    "deploy:firebase": "npm run build:web && firebase deploy --only hosting"
   },
   "dependencies": {
     "@expo/metro-runtime": "~5.0.4",
@@ -23,10 +34,13 @@
     "axios": "^1.10.0",
     "date-fns": "^4.1.0",
     "expo": "~53.0.16",
+    "expo-auth-session": "~6.2.1",
+    "expo-crypto": "~14.1.5",
     "expo-status-bar": "~2.2.3",
+    "expo-web-browser": "~14.2.0",
     "firebase": "^11.10.0",
-    "react": "19.0.0",
-    "react-dom": "19.0.0",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
     "react-native": "0.79.5",
     "react-native-chart-kit": "^6.12.0",
     "react-native-charts-wrapper": "^0.6.0",
@@ -40,7 +54,8 @@
     "react-native-svg": "15.11.2",
     "react-native-vector-icons": "^10.2.0",
     "react-native-web": "^0.20.0",
-    "react-redux": "^9.2.0"
+    "react-redux": "^9.2.0",
+    "expo-updates": "~0.28.16"
   },
   "devDependencies": {
     "@babel/core": "^7.25.2",

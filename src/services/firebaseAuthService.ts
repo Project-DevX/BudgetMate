@@ -2,18 +2,25 @@ import {
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
   signOut,
-  updateProfile,
   sendPasswordResetEmail,
   confirmPasswordReset,
+  updatePassword,
+  updateProfile,
+  EmailAuthProvider,
+  reauthenticateWithCredential,
   onAuthStateChanged,
   User as FirebaseUser,
-  updatePassword,
-  reauthenticateWithCredential,
-  EmailAuthProvider,
 } from "firebase/auth";
-import { doc, setDoc, getDoc, updateDoc } from "firebase/firestore";
+import {
+  doc,
+  setDoc,
+  getDoc,
+  updateDoc,
+  Timestamp,
+} from "firebase/firestore";
 import { auth, db } from "../config/firebase";
 import { User, ApiResponse } from "../types";
+import { googleAuthService } from "./googleAuthService";
 
 export class FirebaseAuthService {
   // Listen to auth state changes
@@ -147,7 +154,23 @@ export class FirebaseAuthService {
     }
   }
 
-  // Logout
+  // Google Sign-In using dedicated Google Auth Service
+  async signInWithGoogle(): Promise<
+    ApiResponse<{ user: User; token: string; refreshToken: string }>
+  > {
+    try {
+      // Delegate to the specialized Google Auth Service
+      return await googleAuthService.signInWithGoogle();
+    } catch (error: any) {
+      console.error('Google Sign-In error:', error);
+      return {
+        success: false,
+        error: error.message || 'Google Sign-In failed',
+      };
+    }
+  }
+
+  // Enhanced logout
   async logout(): Promise<ApiResponse<void>> {
     try {
       await signOut(auth);
@@ -341,6 +364,32 @@ export class FirebaseAuthService {
         return "Sign-in cancelled";
       default:
         return error.message || "An unknown error occurred";
+    }
+  }
+
+  // Handle Google Sign-In specific errors
+  private handleGoogleSignInError(error: any): string {
+    // AuthSession specific errors
+    if (error.message?.includes('cancelled')) {
+      return 'Google Sign-In was cancelled';
+    }
+    if (error.message?.includes('network')) {
+      return 'Network error occurred during Google Sign-In';
+    }
+    if (error.message?.includes('Client ID')) {
+      return 'Google Sign-In configuration error. Please check your setup.';
+    }
+    
+    // Firebase auth errors
+    switch (error.code) {
+      case 'auth/popup-closed-by-user':
+        return 'Google Sign-In was cancelled';
+      case 'auth/cancelled-popup-request':
+        return 'Google Sign-In was cancelled';
+      case 'auth/network-request-failed':
+        return 'Network error occurred during Google Sign-In';
+      default:
+        return error.message || 'Google Sign-In failed';
     }
   }
 }

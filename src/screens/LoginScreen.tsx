@@ -5,7 +5,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { MaterialIcons } from "@expo/vector-icons";
 
 import { useAppDispatch, useAppSelector } from "../store";
-import { loginUser } from "../store/slices/authSlice";
+import { loginUser, signInWithGoogle } from "../store/slices/authSlice";
 
 export function LoginScreen({ navigation }: any) {
   const theme = useTheme();
@@ -21,10 +21,18 @@ export function LoginScreen({ navigation }: any) {
     }
   };
 
-  const handleGoogleSignIn = () => {
-    Alert.alert("Google Sign-In", "Google Sign-In will be implemented here", [
-      { text: "OK" },
-    ]);
+  const handleGoogleSignIn = async () => {
+    try {
+      const result = await dispatch(signInWithGoogle()).unwrap();
+      console.log('Google Sign-In successful:', result);
+    } catch (error: any) {
+      console.error('Google Sign-In failed:', error);
+      Alert.alert(
+        "Google Sign-In Failed", 
+        error || "Failed to sign in with Google. Please try again.",
+        [{ text: "OK" }]
+      );
+    }
   };
 
   return (
@@ -104,7 +112,7 @@ export function LoginScreen({ navigation }: any) {
             disabled={loading}
             style={[styles.button, styles.googleButton]}
             icon={({ size, color }) => (
-              <MaterialIcons name="login" size={size} color={color} />
+              <MaterialIcons name="g-translate" size={size} color="#4285F4" />
             )}
           >
             Continue with Google
