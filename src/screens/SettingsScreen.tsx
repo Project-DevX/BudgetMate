@@ -17,8 +17,9 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { useNavigation } from "@react-navigation/native";
 
 import { useAppSelector, useAppDispatch } from "../store";
-import { toggleTheme } from "../store/slices/uiSlice";
+import { toggleTheme } from "../store/slices/themeSlice";
 import { logoutUser } from "../store/slices/authSlice";
+import { ThemeToggle } from "../components/ThemeToggle";
 
 export function SettingsScreen() {
   const theme = useTheme();
@@ -26,7 +27,7 @@ export function SettingsScreen() {
   const dispatch = useAppDispatch();
 
   const { user } = useAppSelector((state) => state.auth);
-  const { theme: currentTheme } = useAppSelector((state) => state.ui);
+  const { isDark, mode } = useAppSelector((state) => state.theme);
 
   const [notifications, setNotifications] = useState({
     billReminders: true,
@@ -116,6 +117,7 @@ export function SettingsScreen() {
       <Appbar.Header style={{ backgroundColor: theme.colors.surface }}>
         <Appbar.BackAction onPress={() => navigation.goBack()} />
         <Appbar.Content title="Settings" />
+        <ThemeToggle />
       </Appbar.Header>
 
       <ScrollView
@@ -181,13 +183,13 @@ export function SettingsScreen() {
                 <List.Icon
                   {...props}
                   icon={
-                    currentTheme === "light" ? "weather-night" : "weather-sunny"
+                    isDark ? "weather-sunny" : "weather-night"
                   }
                 />
               )}
               right={() => (
                 <Switch
-                  value={currentTheme === "dark"}
+                  value={isDark}
                   onValueChange={handleThemeToggle}
                 />
               )}
