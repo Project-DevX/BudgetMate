@@ -351,7 +351,10 @@ export function DashboardScreen() {
                 </Text>
                 <Text
                   variant="bodySmall"
-                  style={{ marginTop: 8, color: theme.colors.onSurfaceVariant }}
+                  style={{
+                    marginTop: 8,
+                    color: theme.colors.onSurfaceVariant,
+                  }}
                 >
                   Start by adding your first transaction or connecting your bank
                   account.

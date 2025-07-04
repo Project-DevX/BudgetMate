@@ -1,8 +1,8 @@
 import React from "react";
-import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { createStackNavigator } from "@react-navigation/stack";
 import { MaterialIcons } from "@expo/vector-icons";
 import { useTheme } from "react-native-paper";
+import { Platform } from "react-native";
 
 // Screens
 import { DashboardScreen } from "../screens/DashboardScreen";
@@ -21,98 +21,115 @@ import { TransactionDetailScreen } from "../screens/TransactionDetailScreen";
 import { BudgetDetailScreen } from "../screens/BudgetDetailScreen";
 import { BillDetailScreen } from "../screens/BillDetailScreen";
 import { CategoryManagementScreen } from "../screens/CategoryManagementScreen";
+import { WebBottomTabBar } from "../components/WebBottomTabBar";
 
 import { RootStackParamList } from "../types";
 
-const Tab = createBottomTabNavigator();
 const Stack = createStackNavigator<RootStackParamList>();
 
-function TabNavigator() {
-  const theme = useTheme();
+// Wrapped components with WebBottomTabBar
+const WrappedDashboardScreen = () => (
+  <WebBottomTabBar>
+    <DashboardScreen />
+  </WebBottomTabBar>
+);
 
-  return (
-    <Tab.Navigator
-      screenOptions={({ route }) => ({
-        tabBarIcon: ({ focused, color, size }) => {
-          let iconName: keyof typeof MaterialIcons.glyphMap;
+const WrappedTransactionsScreen = () => (
+  <WebBottomTabBar>
+    <TransactionsScreen />
+  </WebBottomTabBar>
+);
 
-          if (route.name === "Dashboard") {
-            iconName = "dashboard";
-          } else if (route.name === "Transactions") {
-            iconName = "receipt";
-          } else if (route.name === "Budgets") {
-            iconName = "pie-chart";
-          } else if (route.name === "Bills") {
-            iconName = "schedule";
-          } else if (route.name === "Accounts") {
-            iconName = "account-balance";
-          } else {
-            iconName = "dashboard";
-          }
+const WrappedBudgetsScreen = () => (
+  <WebBottomTabBar>
+    <BudgetsScreen />
+  </WebBottomTabBar>
+);
 
-          return <MaterialIcons name={iconName} size={size} color={color} />;
-        },
-        tabBarActiveTintColor: theme.colors.primary,
-        tabBarInactiveTintColor: theme.colors.onSurfaceVariant,
-        tabBarStyle: {
-          backgroundColor: theme.colors.surface,
-          borderTopColor: theme.colors.outline,
-        },
-        headerStyle: {
-          backgroundColor: theme.colors.surface,
-        },
-        headerTintColor: theme.colors.onSurface,
-      })}
-    >
-      <Tab.Screen
-        name="Dashboard"
-        component={DashboardScreen}
-        options={{
-          title: "Dashboard",
-          headerShown: false,
-        }}
-      />
-      <Tab.Screen
-        name="Transactions"
-        component={TransactionsScreen}
-        options={{
-          title: "Transactions",
-          headerShown: false,
-        }}
-      />
-      <Tab.Screen
-        name="Budgets"
-        component={BudgetsScreen}
-        options={{
-          title: "Budgets",
-          headerShown: false,
-        }}
-      />
-      <Tab.Screen
-        name="Bills"
-        component={BillsScreen}
-        options={{
-          title: "Bills",
-          headerShown: false,
-        }}
-      />
-      <Tab.Screen
-        name="Accounts"
-        component={AccountsScreen}
-        options={{
-          title: "Accounts",
-          headerShown: false,
-        }}
-      />
-    </Tab.Navigator>
-  );
-}
+const WrappedBillsScreen = () => (
+  <WebBottomTabBar>
+    <BillsScreen />
+  </WebBottomTabBar>
+);
+
+const WrappedAccountsScreen = () => (
+  <WebBottomTabBar>
+    <AccountsScreen />
+  </WebBottomTabBar>
+);
+
+const WrappedSettingsScreen = () => (
+  <WebBottomTabBar>
+    <SettingsScreen />
+  </WebBottomTabBar>
+);
+
+const WrappedProfileScreen = () => (
+  <WebBottomTabBar>
+    <ProfileScreen />
+  </WebBottomTabBar>
+);
+
+const WrappedAddTransactionScreen = () => (
+  <WebBottomTabBar>
+    <AddTransactionScreen />
+  </WebBottomTabBar>
+);
+
+const WrappedAddBudgetScreen = () => (
+  <WebBottomTabBar>
+    <AddBudgetScreen />
+  </WebBottomTabBar>
+);
+
+const WrappedAddBillScreen = () => (
+  <WebBottomTabBar>
+    <AddBillScreen />
+  </WebBottomTabBar>
+);
+
+const WrappedTransactionDetailScreen = () => (
+  <WebBottomTabBar>
+    <TransactionDetailScreen />
+  </WebBottomTabBar>
+);
+
+const WrappedBudgetDetailScreen = () => (
+  <WebBottomTabBar>
+    <BudgetDetailScreen />
+  </WebBottomTabBar>
+);
+
+const WrappedBillDetailScreen = () => (
+  <WebBottomTabBar>
+    <BillDetailScreen />
+  </WebBottomTabBar>
+);
+
+const WrappedStatementUploadScreen = () => (
+  <WebBottomTabBar>
+    <StatementUploadScreen />
+  </WebBottomTabBar>
+);
+
+const WrappedAIInsightsScreen = () => (
+  <WebBottomTabBar>
+    <AIInsightsScreen />
+  </WebBottomTabBar>
+);
+
+const WrappedCategoryManagementScreen = () => (
+  <WebBottomTabBar>
+    <CategoryManagementScreen />
+  </WebBottomTabBar>
+);
 
 export function RootNavigator() {
   const theme = useTheme();
 
   return (
     <Stack.Navigator
+      initialRouteName="Dashboard"
       screenOptions={{
         headerStyle: {
           backgroundColor: theme.colors.surface,
@@ -123,76 +140,99 @@ export function RootNavigator() {
         },
       }}
     >
+      {/* Main screens */}
       <Stack.Screen
-        name="Home"
-        component={TabNavigator}
+        name="Dashboard"
+        component={WrappedDashboardScreen}
         options={{ headerShown: false }}
       />
       <Stack.Screen
+        name="Transactions"
+        component={WrappedTransactionsScreen}
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen
+        name="Budgets"
+        component={WrappedBudgetsScreen}
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen
+        name="Bills"
+        component={WrappedBillsScreen}
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen
+        name="Accounts"
+        component={WrappedAccountsScreen}
+        options={{ headerShown: false }}
+      />
+
+      {/* Modal and Detail Screens */}
+      <Stack.Screen
         name="Settings"
-        component={SettingsScreen}
+        component={WrappedSettingsScreen}
         options={{ title: "Settings" }}
       />
       <Stack.Screen
         name="Profile"
-        component={ProfileScreen}
+        component={WrappedProfileScreen}
         options={{ title: "Profile" }}
       />
       <Stack.Screen
         name="AddTransaction"
-        component={AddTransactionScreen}
+        component={WrappedAddTransactionScreen}
         options={{
           title: "Add Transaction",
-          presentation: "modal",
+          presentation: Platform.OS === "ios" ? "modal" : "card",
         }}
       />
       <Stack.Screen
         name="AddBudget"
-        component={AddBudgetScreen}
+        component={WrappedAddBudgetScreen}
         options={{
           title: "Add Budget",
-          presentation: "modal",
+          presentation: Platform.OS === "ios" ? "modal" : "card",
         }}
       />
       <Stack.Screen
         name="AddBill"
-        component={AddBillScreen}
+        component={WrappedAddBillScreen}
         options={{
           title: "Add Bill",
-          presentation: "modal",
+          presentation: Platform.OS === "ios" ? "modal" : "card",
         }}
       />
       <Stack.Screen
         name="TransactionDetail"
-        component={TransactionDetailScreen}
+        component={WrappedTransactionDetailScreen}
         options={{ title: "Transaction Details" }}
       />
       <Stack.Screen
         name="BudgetDetail"
-        component={BudgetDetailScreen}
+        component={WrappedBudgetDetailScreen}
         options={{ title: "Budget Details" }}
       />
       <Stack.Screen
         name="BillDetail"
-        component={BillDetailScreen}
+        component={WrappedBillDetailScreen}
         options={{ title: "Bill Details" }}
       />
       <Stack.Screen
         name="StatementUpload"
-        component={StatementUploadScreen}
+        component={WrappedStatementUploadScreen}
         options={{
           title: "Upload Statement",
-          presentation: "modal",
+          presentation: Platform.OS === "ios" ? "modal" : "card",
         }}
       />
       <Stack.Screen
         name="AIInsights"
-        component={AIInsightsScreen}
+        component={WrappedAIInsightsScreen}
         options={{ title: "AI Insights" }}
       />
       <Stack.Screen
         name="CategoryManagement"
-        component={CategoryManagementScreen}
+        component={WrappedCategoryManagementScreen}
         options={{ title: "Manage Categories" }}
       />
     </Stack.Navigator>

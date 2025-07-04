@@ -1,10 +1,12 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useRef } from "react";
 import { StatusBar } from "expo-status-bar";
 import { Provider } from "react-redux";
-import { NavigationContainer } from "@react-navigation/native";
+import { NavigationContainer, NavigationState } from "@react-navigation/native";
 import { PaperProvider } from "react-native-paper";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { SafeAreaProvider } from "react-native-safe-area-context";
+import { Platform, BackHandler } from "react-native";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 import { store } from "./src/store";
 import { RootNavigator } from "./src/navigation/RootNavigator";
@@ -20,10 +22,102 @@ import { THEME_COLORS } from "./src/constants";
 import { paperTheme } from "./src/utils/theme";
 import { firebaseAuthService } from "./src/services/firebaseAuthService";
 
+// Navigation persistence configuration
+const PERSISTENCE_KEY = "NAVIGATION_STATE_V1";
+
+// Web routing configuration
+const linking = {
+  prefixes: [
+    // Production URLs
+    "https://budgetmate-bkwk1w8se-darshanas-projects-48d8e09a.vercel.app",
+    "https://budgetmate-psi.vercel.app",
+    // Development URLs
+    "http://localhost:19006",
+    "http://localhost:3000",
+  ],
+  config: {
+    screens: {
+      // Auth screens (when not authenticated)
+      Onboarding: "onboarding",
+      Login: "login",
+      Register: "register",
+      ForgotPassword: "forgot-password",
+      ResetPassword: "reset-password",
+
+      // Main app screens (when authenticated)
+      Dashboard: "", // Root path - default route
+      Transactions: "transactions",
+      Budgets: "budgets",
+      Bills: "bills",
+      Accounts: "accounts",
+
+      // Modal/Stack screens
+      AddTransaction: "add-transaction",
+      AddBudget: "add-budget",
+      AddBill: "add-bill",
+      TransactionDetail: "transaction/:transactionId",
+      BudgetDetail: "budget/:budgetId",
+      BillDetail: "bill/:billId",
+      StatementUpload: "upload-statement",
+      AIInsights: "ai-insights",
+      CategoryManagement: "categories",
+      Profile: "profile",
+      Settings: "settings",
+    } as const,
+  },
+};
+
 function AppContent() {
   const dispatch = useAppDispatch();
   const { isAuthenticated, loading } = useAppSelector((state) => state.auth);
   const { theme } = useAppSelector((state) => state.ui);
+
+  // Navigation state persistence
+  const [isReady, setIsReady] = React.useState(false);
+  const [initialState, setInitialState] = React.useState<
+    NavigationState | undefined
+  >();
+  const navigationRef = useRef<any>(null);
+
+  // Restore navigation state on app start
+  React.useEffect(() => {
+    const restoreState = async () => {
+      try {
+        const savedStateString = await AsyncStorage.getItem(PERSISTENCE_KEY);
+        const state = savedStateString
+          ? JSON.parse(savedStateString)
+          : undefined;
+
+        if (state !== undefined) {
+          setInitialState(state);
+        }
+      } finally {
+        setIsReady(true);
+      }
+    };
+
+    if (!isReady) {
+      restoreState();
+    }
+  }, [isReady]);
+
+  // Handle mobile back button
+  React.useEffect(() => {
+    if (Platform.OS === "android") {
+      const backHandler = BackHandler.addEventListener(
+        "hardwareBackPress",
+        () => {
+          if (navigationRef.current?.canGoBack()) {
+            navigationRef.current.goBack();
+            return true; // Prevent default behavior
+          }
+          return false; // Allow default behavior (exit app)
+        }
+      );
+
+      return () => backHandler.remove();
+    }
+  }, []);
 
   useEffect(() => {
     console.log("App: Setting up Firebase auth state listener...");
@@ -82,12 +176,18 @@ function AppContent() {
     };
   }, [dispatch]);
 
-  if (loading) {
+  if (!isReady || loading) {
     return <LoadingScreen />;
   }
 
   return (
     <NavigationContainer
+      ref={navigationRef}
+      initialState={initialState}
+      onStateChange={(state) => {
+        AsyncStorage.setItem(PERSISTENCE_KEY, JSON.stringify(state));
+      }}
+      linking={linking}
       theme={{
         dark: theme === "dark",
         colors: {
