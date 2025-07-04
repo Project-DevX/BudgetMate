@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { View, StyleSheet, ScrollView, RefreshControl } from "react-native";
+import { View, StyleSheet } from "react-native";
 import { Text, Card, Button, useTheme, Appbar, FAB } from "react-native-paper";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useNavigation } from "@react-navigation/native";
@@ -158,19 +158,7 @@ export function DashboardScreen() {
         />
       </Appbar.Header>
 
-      <ScrollView
-        style={styles.content}
-        contentContainerStyle={styles.scrollContent}
-        showsVerticalScrollIndicator={false}
-        refreshControl={
-          <RefreshControl
-            refreshing={refreshing}
-            onRefresh={onRefresh}
-            colors={[theme.colors.primary]}
-            tintColor={theme.colors.primary}
-          />
-        }
-      >
+      <View style={styles.content}>
         {/* Quick Stats */}
         <View style={styles.section}>
           <Text variant="headlineSmall" style={styles.sectionTitle}>
@@ -401,7 +389,7 @@ export function DashboardScreen() {
             Logout
           </Button>
         </View>
-      </ScrollView>
+      </View>
 
       <FAB
         icon="plus"
@@ -418,8 +406,6 @@ const styles = StyleSheet.create({
   },
   content: {
     flex: 1,
-  },
-  scrollContent: {
     padding: 16,
     paddingBottom: 100, // Extra padding to ensure FAB doesn't cover content
   },
