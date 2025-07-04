@@ -1,23 +1,25 @@
 import React, { useEffect, useState } from "react";
 import { View, StyleSheet } from "react-native";
-import { Text, Card, Button, useTheme, Appbar, FAB } from "react-native-paper";
+import { Text, Card, Button, Appbar, FAB } from "react-native-paper";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useNavigation } from "@react-navigation/native";
 import { MaterialIcons } from "@expo/vector-icons";
 
 import { useAppSelector, useAppDispatch } from "../store";
-import { toggleTheme } from "../store/slices/uiSlice";
 import { logoutUser } from "../store/slices/authSlice";
 import { fetchAllTransactions } from "../store/slices/transactionSlice";
+import { useTheme, useThemeColors } from "../utils/theme";
+import { ThemeToggle } from "../components/ThemeToggle";
 
 export function DashboardScreen() {
   const theme = useTheme();
+  const colors = useThemeColors();
   const navigation = useNavigation();
   const dispatch = useAppDispatch();
   const [refreshing, setRefreshing] = useState(false);
 
   const { user } = useAppSelector((state) => state.auth);
-  const { theme: currentTheme } = useAppSelector((state) => state.ui);
+  const { isDark } = useAppSelector((state) => state.theme);
   const { transactions, loading } = useAppSelector(
     (state) => state.transactions
   );
@@ -89,10 +91,6 @@ export function DashboardScreen() {
     dispatch(logoutUser());
   };
 
-  const handleToggleTheme = () => {
-    dispatch(toggleTheme());
-  };
-
   // Helper function to refresh data
   const refreshData = async () => {
     try {
@@ -144,10 +142,7 @@ export function DashboardScreen() {
           title="BudgetMate"
           subtitle={`Welcome back, ${user?.name || "User"}!`}
         />
-        <Appbar.Action
-          icon={currentTheme === "light" ? "weather-night" : "weather-sunny"}
-          onPress={handleToggleTheme}
-        />
+        <ThemeToggle />
         <Appbar.Action
           icon="account-circle"
           onPress={() => navigation.navigate("Profile" as never)}
