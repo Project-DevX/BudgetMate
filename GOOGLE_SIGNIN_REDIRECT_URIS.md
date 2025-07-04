@@ -7,14 +7,11 @@ This document explains the redirect URIs that need to be configured in Google Cl
 ### 1. Development (Expo Proxy)
 For development using Expo Go or Expo Development Build, add this exact URI:
 ```
-https://auth.expo.io/@YOUR_EXPO_USERNAME/BudgetMate
+https://auth.expo.io/@himeth777/BudgetMate
 ```
 
-**Important:** Replace `YOUR_EXPO_USERNAME` with your actual Expo username.
-
-To find your Expo username:
-- Run `npx expo whoami` in terminal
-- Or check your account at https://expo.dev
+**Your Expo username is: `himeth777`**
+**Your app slug is: `BudgetMate`**
 
 ### 2. Production (Custom Scheme)
 For production builds (APK, AAB, IPA), add this URI:

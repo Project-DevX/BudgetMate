@@ -10,7 +10,13 @@
     "build": "expo export --platform web",
     "build:web": "expo export --platform web --output-dir dist",
     "build:vercel": "expo export --platform web --output-dir dist",
-    "build:netlify": "npm run build:web && copy public\\_redirects dist\\_redirects"
+    "build:netlify": "npm run build:web && copy public\\_redirects dist\\_redirects",
+    "publish": "expo publish",
+    "publish:web": "expo publish --platform web",
+    "deploy": "./scripts/deploy.sh",
+    "deploy:netlify": "npm run build:web && echo 'Upload dist folder to Netlify'",
+    "deploy:vercel": "vercel --prod",
+    "deploy:firebase": "npm run build:web && firebase deploy --only hosting"
   },
   "dependencies": {
     "@expo/metro-runtime": "~5.0.4",
@@ -47,7 +53,7 @@
   },
   "devDependencies": {
     "@babel/core": "^7.25.2",
-    "@types/react": "^18.2.0",
+    "@types/react": "~19.0.10",
     "typescript": "~5.8.3"
   },
   "private": true
