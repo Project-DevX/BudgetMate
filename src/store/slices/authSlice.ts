@@ -191,6 +191,29 @@ export const resetPassword = createAsyncThunk(
   }
 );
 
+export const signInWithGoogle = createAsyncThunk(
+  "auth/signInWithGoogle",
+  async (_, { rejectWithValue }) => {
+    try {
+      const response = await firebaseAuthService.signInWithGoogle();
+      if (response.success && response.data) {
+        await storageService.setItem(
+          STORAGE_KEYS.AUTH_TOKEN,
+          response.data.token
+        );
+        await storageService.setItem(
+          STORAGE_KEYS.REFRESH_TOKEN,
+          response.data.refreshToken
+        );
+        return response.data;
+      }
+      return rejectWithValue(response.error || "Google Sign-In failed");
+    } catch (error: any) {
+      return rejectWithValue(error.message || "Google Sign-In failed");
+    }
+  }
+);
+
 // Auth slice
 const authSlice = createSlice({
   name: "auth",
@@ -354,6 +377,25 @@ const authSlice = createSlice({
         state.error = null;
       })
       .addCase(resetPassword.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as string;
+      });
+
+    // Sign in with Google
+    builder
+      .addCase(signInWithGoogle.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(signInWithGoogle.fulfilled, (state, action) => {
+        state.loading = false;
+        state.isAuthenticated = true;
+        state.token = action.payload.token;
+        state.refreshToken = action.payload.refreshToken;
+        state.user = action.payload.user;
+        state.error = null;
+      })
+      .addCase(signInWithGoogle.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload as string;
       });
