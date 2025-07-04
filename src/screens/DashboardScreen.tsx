@@ -1,5 +1,5 @@
-import React, { useEffect } from "react";
-import { View, StyleSheet, ScrollView } from "react-native";
+import React, { useEffect, useState } from "react";
+import { View, StyleSheet, ScrollView, RefreshControl } from "react-native";
 import { Text, Card, Button, useTheme, Appbar, FAB } from "react-native-paper";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useNavigation } from "@react-navigation/native";
@@ -14,10 +14,76 @@ export function DashboardScreen() {
   const theme = useTheme();
   const navigation = useNavigation();
   const dispatch = useAppDispatch();
+  const [refreshing, setRefreshing] = useState(false);
 
   const { user } = useAppSelector((state) => state.auth);
   const { theme: currentTheme } = useAppSelector((state) => state.ui);
-  const { transactions } = useAppSelector((state) => state.transactions);
+  const { transactions, loading } = useAppSelector(
+    (state) => state.transactions
+  );
+  const { accounts } = useAppSelector((state) => state.accounts);
+
+  // Calculate totals from transactions and accounts
+  const currentMonth = new Date().getMonth();
+  const currentYear = new Date().getFullYear();
+
+  // Calculate total balance from accounts if available, otherwise from transactions
+  const totalBalance =
+    accounts && accounts.length > 0
+      ? accounts.reduce((sum, account) => sum + (account.balance || 0), 0)
+      : transactions && transactions.length > 0
+      ? transactions
+          .filter((t) => t.type === "income")
+          .reduce((sum, t) => sum + (t.amount || 0), 0) -
+        transactions
+          .filter((t) => t.type === "expense")
+          .reduce((sum, t) => sum + (t.amount || 0), 0)
+      : 0;
+
+  // Calculate current month spending
+  const monthlySpending =
+    transactions && transactions.length > 0
+      ? transactions
+          .filter((transaction) => {
+            try {
+              const transactionDate = new Date(transaction.date);
+              // Ensure the date is valid
+              if (isNaN(transactionDate.getTime())) {
+                console.warn("Invalid transaction date:", transaction.date);
+                return false;
+              }
+              return (
+                transaction.type === "expense" &&
+                transactionDate.getMonth() === currentMonth &&
+                transactionDate.getFullYear() === currentYear
+              );
+            } catch (error) {
+              console.warn(
+                "Error parsing transaction date:",
+                transaction.date,
+                error
+              );
+              return false;
+            }
+          })
+          .reduce((sum, transaction) => sum + transaction.amount, 0)
+      : 0;
+
+  // Helper function to format currency
+  const formatCurrency = (amount: number) => {
+    const sign = amount >= 0 ? "+" : "";
+    return `${sign}$${Math.abs(amount).toFixed(2)}`;
+  };
+
+  // Debug logging for calculations
+  console.log("🔢 Dashboard calculations:", {
+    transactionsCount: transactions?.length || 0,
+    accountsCount: accounts?.length || 0,
+    totalBalance,
+    monthlySpending,
+    currentMonth: currentMonth + 1, // +1 for display (January = 1)
+    currentYear,
+  });
 
   const handleLogout = () => {
     dispatch(logoutUser());
@@ -27,20 +93,47 @@ export function DashboardScreen() {
     dispatch(toggleTheme());
   };
 
-  // Fetch transactions when component mounts
-  useEffect(() => {
-    const loadTransactions = async () => {
-      try {
-        console.log("🔥 Dashboard: Fetching transactions from Firebase...");
-        await dispatch(fetchAllTransactions()).unwrap();
-        console.log("✅ Dashboard: Transactions loaded successfully");
-      } catch (error) {
-        console.error("❌ Dashboard: Failed to load transactions:", error);
-      }
-    };
+  // Helper function to refresh data
+  const refreshData = async () => {
+    try {
+      console.log("🔄 Dashboard: Refreshing data...");
+      await dispatch(fetchAllTransactions()).unwrap();
+      console.log("✅ Dashboard: Data refreshed successfully");
+    } catch (error) {
+      console.error("❌ Dashboard: Failed to refresh data:", error);
+    }
+  };
 
-    loadTransactions();
+  // Pull-to-refresh handler
+  const onRefresh = async () => {
+    setRefreshing(true);
+    await refreshData();
+    setRefreshing(false);
+  };
+
+  // Fetch transactions when component mounts or when user returns to dashboard
+  useEffect(() => {
+    refreshData();
   }, [dispatch]);
+
+  // Add navigation focus listener to refresh data when user returns to dashboard
+  useEffect(() => {
+    const unsubscribe = navigation.addListener("focus", () => {
+      console.log("📱 Dashboard: Screen focused, refreshing data...");
+      refreshData();
+    });
+
+    return unsubscribe;
+  }, [navigation, dispatch]);
+
+  // Additional effect to recalculate when transactions change
+  useEffect(() => {
+    if (transactions && transactions.length > 0) {
+      console.log(
+        "📊 Dashboard: Transactions updated, recalculating totals..."
+      );
+    }
+  }, [transactions]);
 
   return (
     <SafeAreaView
@@ -69,11 +162,19 @@ export function DashboardScreen() {
         style={styles.content}
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            colors={[theme.colors.primary]}
+            tintColor={theme.colors.primary}
+          />
+        }
       >
         {/* Quick Stats */}
         <View style={styles.section}>
           <Text variant="headlineSmall" style={styles.sectionTitle}>
-            Quick Overview
+            Quick Overview {loading && "(Updating...)"}
           </Text>
           <View style={styles.statsGrid}>
             <Card
@@ -91,9 +192,12 @@ export function DashboardScreen() {
                 </Text>
                 <Text
                   variant="headlineMedium"
-                  style={{ color: theme.colors.onPrimaryContainer }}
+                  style={{
+                    color: theme.colors.onPrimaryContainer,
+                    fontWeight: "bold",
+                  }}
                 >
-                  $5,240.50
+                  {formatCurrency(totalBalance)}
                 </Text>
               </Card.Content>
             </Card>
@@ -113,9 +217,12 @@ export function DashboardScreen() {
                 </Text>
                 <Text
                   variant="headlineMedium"
-                  style={{ color: theme.colors.onSecondaryContainer }}
+                  style={{
+                    color: theme.colors.onSecondaryContainer,
+                    fontWeight: "bold",
+                  }}
                 >
-                  $1,890.25
+                  ${monthlySpending.toFixed(2)}
                 </Text>
               </Card.Content>
             </Card>
