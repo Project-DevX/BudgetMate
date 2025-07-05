@@ -1,5 +1,5 @@
-import React, { useState } from "react";
-import { View, StyleSheet } from "react-native";
+import React, { useState, useEffect } from "react";
+import { View, StyleSheet, Alert, RefreshControl } from "react-native";
 import {
   Text,
   Card,
@@ -11,89 +11,44 @@ import {
   Chip,
   Divider,
   IconButton,
+  ActivityIndicator,
 } from "react-native-paper";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useNavigation } from "@react-navigation/native";
 import { MaterialIcons } from "@expo/vector-icons";
 
-import { useAppSelector } from "../store";
-
-interface Budget {
-  id: string;
-  name: string;
-  category: string;
-  allocated: number;
-  spent: number;
-  period: "weekly" | "monthly" | "yearly";
-  startDate: string;
-  endDate: string;
-  isActive: boolean;
-}
+import { useAppSelector, useAppDispatch } from "../store";
+import {
+  fetchBudgets,
+  createBudget,
+  deleteBudget,
+  toggleBudgetStatus,
+  setCurrentPeriod,
+} from "../store/slices/budgetSlice";
 
 export function BudgetsScreen() {
   const theme = useTheme();
   const navigation = useNavigation();
+  const dispatch = useAppDispatch();
 
-  const { transactions } = useAppSelector((state) => state.transactions);
+  const { budgets, loading, error, currentPeriod } = useAppSelector(
+    (state) => state.budgets
+  );
   const [refreshing, setRefreshing] = useState(false);
   const [selectedPeriod, setSelectedPeriod] = useState<
     "weekly" | "monthly" | "yearly"
-  >("monthly");
+  >(currentPeriod as "weekly" | "monthly" | "yearly");
 
-  // Mock budgets data - in a real app, this would come from Redux store
-  const [budgets] = useState<Budget[]>([
-    {
-      id: "1",
-      name: "Groceries",
-      category: "food",
-      allocated: 500,
-      spent: 347.5,
-      period: "monthly",
-      startDate: "2025-07-01",
-      endDate: "2025-07-31",
-      isActive: true,
-    },
-    {
-      id: "2",
-      name: "Transportation",
-      category: "transport",
-      allocated: 200,
-      spent: 156.3,
-      period: "monthly",
-      startDate: "2025-07-01",
-      endDate: "2025-07-31",
-      isActive: true,
-    },
-    {
-      id: "3",
-      name: "Entertainment",
-      category: "entertainment",
-      allocated: 150,
-      spent: 89.75,
-      period: "monthly",
-      startDate: "2025-07-01",
-      endDate: "2025-07-31",
-      isActive: true,
-    },
-    {
-      id: "4",
-      name: "Shopping",
-      category: "shopping",
-      allocated: 300,
-      spent: 425.2,
-      period: "monthly",
-      startDate: "2025-07-01",
-      endDate: "2025-07-31",
-      isActive: true,
-    },
-  ]);
+  useEffect(() => {
+    dispatch(fetchBudgets());
+  }, [dispatch]);
 
   const filteredBudgets = budgets.filter(
     (budget) => budget.period === selectedPeriod
   );
 
   const totalAllocated = filteredBudgets.reduce(
-    (sum, budget) => sum + budget.allocated,
+    (sum, budget) => sum + budget.amount,
     0
   );
   const totalSpent = filteredBudgets.reduce(
@@ -104,15 +59,58 @@ export function BudgetsScreen() {
 
   const onRefresh = async () => {
     setRefreshing(true);
-    // In a real app, you would fetch fresh budget data here
-    setTimeout(() => setRefreshing(false), 1000);
+    try {
+      await dispatch(fetchBudgets()).unwrap();
+    } catch (error) {
+      console.error("Failed to refresh budgets:", error);
+    } finally {
+      setRefreshing(false);
+    }
   };
 
-  const getBudgetStatus = (budget: Budget) => {
-    const percentage = (budget.spent / budget.allocated) * 100;
+  const getBudgetStatus = (budget: any) => {
+    const percentage = (budget.spent / budget.amount) * 100;
     if (percentage >= 100) return "over";
     if (percentage >= 80) return "warning";
     return "good";
+  };
+
+  const handleEditBudget = (budgetId: string) => {
+    // Navigate to edit budget screen with pre-filled data
+    console.log("Edit budget:", budgetId);
+    // navigation.navigate('AddBudget', { budgetId });
+  };
+
+  const handleToggleBudgetStatus = async (
+    budgetId: string,
+    isActive: boolean
+  ) => {
+    try {
+      await dispatch(toggleBudgetStatus({ budgetId, isActive })).unwrap();
+    } catch (error) {
+      Alert.alert("Error", "Failed to update budget status");
+    }
+  };
+
+  const handleDeleteBudget = (budgetId: string) => {
+    Alert.alert(
+      "Delete Budget",
+      "Are you sure you want to delete this budget? This action cannot be undone.",
+      [
+        { text: "Cancel", style: "cancel" },
+        {
+          text: "Delete",
+          style: "destructive",
+          onPress: async () => {
+            try {
+              await dispatch(deleteBudget(budgetId)).unwrap();
+            } catch (error) {
+              Alert.alert("Error", "Failed to delete budget");
+            }
+          },
+        },
+      ]
+    );
   };
 
   const getBudgetStatusColor = (status: string) => {
@@ -159,13 +157,34 @@ export function BudgetsScreen() {
             <Chip
               key={period}
               mode={selectedPeriod === period ? "flat" : "outlined"}
-              onPress={() => setSelectedPeriod(period)}
+              onPress={() => {
+                setSelectedPeriod(period);
+                dispatch(setCurrentPeriod(period));
+              }}
               style={styles.periodChip}
             >
               {period.charAt(0).toUpperCase() + period.slice(1)}
             </Chip>
           ))}
         </View>
+      </View>
+
+      {/* Budget Description */}
+      <View style={styles.descriptionContainer}>
+        <Card style={styles.descriptionCard}>
+          <Card.Content>
+            <Text variant="titleMedium" style={styles.descriptionTitle}>
+              What is a Budget?
+            </Text>
+            <Text variant="bodyMedium" style={styles.descriptionText}>
+              A budget helps you control your spending by setting limits for
+              different categories. Set monthly, weekly, or yearly spending
+              limits to track your progress and stay on target with your
+              financial goals. Monitor how much you've spent versus your budget
+              to avoid overspending.
+            </Text>
+          </Card.Content>
+        </Card>
       </View>
 
       <View style={styles.content}>
@@ -251,10 +270,10 @@ export function BudgetsScreen() {
             filteredBudgets.map((budget) => {
               const status = getBudgetStatus(budget);
               const percentage = Math.min(
-                (budget.spent / budget.allocated) * 100,
+                (budget.spent / budget.amount) * 100,
                 100
               );
-              const remaining = budget.allocated - budget.spent;
+              const remaining = budget.amount - budget.spent;
 
               return (
                 <Card
@@ -312,7 +331,7 @@ export function BudgetsScreen() {
                           variant="bodySmall"
                           style={{ color: theme.colors.onSurfaceVariant }}
                         >
-                          Budget: {formatCurrency(budget.allocated)}
+                          Budget: {formatCurrency(budget.amount)}
                         </Text>
                       </View>
 
@@ -342,6 +361,30 @@ export function BudgetsScreen() {
                         >
                           {percentage.toFixed(1)}% used
                         </Text>
+                      </View>
+
+                      {/* Action buttons */}
+                      <View style={styles.budgetActions}>
+                        <IconButton
+                          icon="pencil"
+                          size={20}
+                          onPress={() => handleEditBudget(budget.id)}
+                        />
+                        <IconButton
+                          icon={budget.isActive ? "pause" : "play"}
+                          size={20}
+                          onPress={() =>
+                            handleToggleBudgetStatus(
+                              budget.id,
+                              !budget.isActive
+                            )
+                          }
+                        />
+                        <IconButton
+                          icon="delete"
+                          size={20}
+                          onPress={() => handleDeleteBudget(budget.id)}
+                        />
                       </View>
                     </View>
                   </Card.Content>
@@ -497,6 +540,14 @@ const styles = StyleSheet.create({
     height: 6,
     borderRadius: 3,
   },
+  budgetActions: {
+    flexDirection: "row",
+    justifyContent: "flex-end",
+    marginTop: 12,
+    paddingTop: 8,
+    borderTopWidth: 1,
+    borderTopColor: "rgba(0,0,0,0.1)",
+  },
   remainingRow: {
     flexDirection: "row",
     justifyContent: "space-between",
@@ -536,6 +587,21 @@ const styles = StyleSheet.create({
   },
   emptyButton: {
     marginTop: 16,
+  },
+  descriptionContainer: {
+    paddingHorizontal: 16,
+    paddingBottom: 8,
+  },
+  descriptionCard: {
+    marginBottom: 8,
+  },
+  descriptionTitle: {
+    marginBottom: 8,
+    fontWeight: "600",
+  },
+  descriptionText: {
+    lineHeight: 20,
+    opacity: 0.8,
   },
   fab: {
     position: "absolute",

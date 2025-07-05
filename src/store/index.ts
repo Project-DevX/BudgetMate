@@ -1,16 +1,17 @@
-import { configureStore } from '@reduxjs/toolkit';
-import { useDispatch, useSelector, TypedUseSelectorHook } from 'react-redux';
-import authSlice from './slices/authSlice';
-import userSlice from './slices/userSlice';
-import transactionSlice from './slices/transactionSlice';
-import budgetSlice from './slices/budgetSlice';
-import billSlice from './slices/billSlice';
-import accountSlice from './slices/accountSlice';
-import dashboardSlice from './slices/dashboardSlice';
-import aiSlice from './slices/aiSlice';
-import uiSlice from './slices/uiSlice';
-import themeSlice from './slices/themeSlice';
-import { RootState } from '../types';
+import { configureStore } from "@reduxjs/toolkit";
+import { useDispatch, useSelector, TypedUseSelectorHook } from "react-redux";
+import authSlice from "./slices/authSlice";
+import userSlice from "./slices/userSlice";
+import transactionSlice from "./slices/transactionSlice";
+import budgetSlice from "./slices/budgetSlice";
+import billSlice from "./slices/billSlice";
+import accountSlice from "./slices/accountSlice";
+import dashboardSlice from "./slices/dashboardSlice";
+import aiSlice from "./slices/aiSlice";
+import uiSlice from "./slices/uiSlice";
+import themeSlice from "./slices/themeSlice";
+import settingsSlice from "./slices/settingsSlice";
+import { RootState } from "../types";
 
 export const store = configureStore({
   reducer: {
@@ -24,11 +25,12 @@ export const store = configureStore({
     ai: aiSlice,
     ui: uiSlice,
     theme: themeSlice,
+    settings: settingsSlice,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({
       serializableCheck: {
-        ignoredActions: ['persist/PERSIST', 'persist/REHYDRATE'],
+        ignoredActions: ["persist/PERSIST", "persist/REHYDRATE"],
       },
     }),
 });

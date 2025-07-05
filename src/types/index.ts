@@ -10,7 +10,7 @@ export interface User {
 
 export interface UserPreferences {
   currency: string;
-  budgetCycle: 'monthly' | 'weekly' | 'biweekly';
+  budgetCycle: "monthly" | "weekly" | "biweekly";
   notifications: NotificationSettings;
   categories: CategorySettings;
 }
@@ -43,13 +43,13 @@ export interface Transaction {
   category: string;
   subcategory?: string;
   date: string;
-  type: 'income' | 'expense';
+  type: "income" | "expense";
   merchant?: string;
   tags: string[];
   isRecurring: boolean;
   recurringId?: string;
   confidence: number;
-  source: 'manual' | 'bank_api' | 'statement_upload';
+  source: "manual" | "bank_api" | "statement_upload";
   createdAt: string;
   updatedAt: string;
 }
@@ -58,7 +58,7 @@ export interface Account {
   id: string;
   userId: string;
   name: string;
-  type: 'checking' | 'savings' | 'credit' | 'investment';
+  type: "checking" | "savings" | "credit" | "investment";
   balance: number;
   currency: string;
   bankName: string;
@@ -74,7 +74,7 @@ export interface Budget {
   category: string;
   amount: number;
   spent: number;
-  period: 'monthly' | 'weekly' | 'yearly';
+  period: "monthly" | "weekly" | "yearly";
   startDate: string;
   endDate: string;
   isActive: boolean;
@@ -86,7 +86,7 @@ export interface Budget {
 export interface BudgetAlert {
   id: string;
   budgetId: string;
-  type: 'threshold' | 'overspent' | 'approaching_limit';
+  type: "threshold" | "overspent" | "approaching_limit";
   threshold: number;
   isActive: boolean;
   lastTriggered?: string;
@@ -99,7 +99,7 @@ export interface Bill {
   description?: string;
   amount: number;
   dueDate: string;
-  frequency: 'monthly' | 'weekly' | 'yearly' | 'one-time';
+  frequency: "monthly" | "weekly" | "yearly" | "one-time";
   category: string;
   accountId: string;
   isAutoPay: boolean;
@@ -122,10 +122,10 @@ export interface RecurringTransaction {
   userId: string;
   name: string;
   amount: number;
-  frequency: 'daily' | 'weekly' | 'monthly' | 'yearly';
+  frequency: "daily" | "weekly" | "monthly" | "yearly";
   nextOccurrence: string;
   category: string;
-  type: 'income' | 'expense';
+  type: "income" | "expense";
   isActive: boolean;
   detectedAt: string;
   confidence: number;
@@ -134,7 +134,7 @@ export interface RecurringTransaction {
 export interface MLPrediction {
   id: string;
   transactionId: string;
-  type: 'category' | 'amount' | 'recurring';
+  type: "category" | "amount" | "recurring";
   prediction: any;
   confidence: number;
   createdAt: string;
@@ -170,10 +170,14 @@ export interface MonthlyTrend {
 export interface Alert {
   id: string;
   userId: string;
-  type: 'budget_exceeded' | 'bill_due' | 'unusual_spending' | 'subscription_alert';
+  type:
+    | "budget_exceeded"
+    | "bill_due"
+    | "unusual_spending"
+    | "subscription_alert";
   title: string;
   message: string;
-  severity: 'low' | 'medium' | 'high';
+  severity: "low" | "medium" | "high";
   isRead: boolean;
   createdAt: string;
   actionRequired: boolean;
@@ -183,7 +187,11 @@ export interface Alert {
 export interface AIInsight {
   id: string;
   userId: string;
-  type: 'spending_pattern' | 'budget_suggestion' | 'savings_opportunity' | 'subscription_optimization';
+  type:
+    | "spending_pattern"
+    | "budget_suggestion"
+    | "savings_opportunity"
+    | "subscription_optimization";
   title: string;
   description: string;
   actionItems: string[];
@@ -200,7 +208,7 @@ export interface StatementUpload {
   fileSize: number;
   fileType: string;
   uploadDate: string;
-  processingStatus: 'pending' | 'processing' | 'completed' | 'failed';
+  processingStatus: "pending" | "processing" | "completed" | "failed";
   extractedTransactions: Transaction[];
   errors: string[];
 }
@@ -254,6 +262,7 @@ export interface RootState {
   ai: AIState;
   ui: UIState;
   theme: ThemeState;
+  settings: SettingsState;
 }
 
 export interface AuthState {
@@ -348,7 +357,7 @@ export interface AIState {
 }
 
 export interface UIState {
-  theme: 'light' | 'dark';
+  theme: "light" | "dark";
   isDrawerOpen: boolean;
   loading: boolean;
   alerts: Alert[];
@@ -356,6 +365,33 @@ export interface UIState {
 }
 
 export interface ThemeState {
-  mode: 'light' | 'dark' | 'system';
+  mode: "light" | "dark" | "system";
   isDark: boolean;
+}
+
+export interface SettingsState {
+  settings: {
+    notifications: {
+      billReminders: boolean;
+      budgetAlerts: boolean;
+      transactionSync: boolean;
+      weeklyReports: boolean;
+      monthlyReports: boolean;
+    };
+    privacy: {
+      biometricAuth: boolean;
+      requirePasswordForTransactions: boolean;
+      shareDataForInsights: boolean;
+      autoSync: boolean;
+    };
+    preferences: {
+      currency: string;
+      dateFormat: string;
+      theme: "light" | "dark" | "system";
+    };
+    updatedAt: string;
+  };
+  loading: boolean;
+  updating: boolean;
+  error: string | null;
 }
